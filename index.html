@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoanCheckBLR – Will I Get a Loan?</title>
+<meta name="description" content="Free loan check in 1 minute. Find out if you can get a personal, business, home or property loan. Available in English, Hindi, Bengali, Marathi, Telugu, Tamil and Kannada.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one big question per screen, thumb-sized answer buttons, like an ATM menu. */
+:root{
+  --bg:#f3f2fb;
+  --card:#ffffff;
+  --ink:#191d33;
+  --muted:#5a5f78;
+  --line:#dcdcec;
+  --brand:#4b2fb2;
+  --brand-soft:#ebe7fb;
+  --good:#1d7a4c; --good-soft:#e0f3e9;
+  --warn:#9a5b00; --warn-soft:#fdf0d8;
+  --bad:#b3261e; --bad-soft:#fbe1df;
+  --font-logo:"Bricolage Grotesque", system-ui, sans-serif;
+  --font-body:system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Telugu", "Noto Sans Tamil", "Noto Sans Kannada", sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#0f1121; --card:#181b2e; --ink:#ecedf5; --muted:#a2a7bf; --line:#2c3150; --brand:#a898ff; --brand-soft:#262150; --good:#5fd39a; --good-soft:#163428; --warn:#f0b44c; --warn-soft:#3a2c10; --bad:#ff8a80; --bad-soft:#3d1a18; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --bg:#0f1121; --card:#181b2e; --ink:#ecedf5; --muted:#a2a7bf; --line:#2c3150; --brand:#a898ff; --brand-soft:#262150; --good:#5fd39a; --good-soft:#163428; --warn:#f0b44c; --warn-soft:#3a2c10; --bad:#ff8a80; --bad-soft:#3d1a18; color-scheme:dark; }
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding:12px 16px 40px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0 12px}
+.logo{font-family:var(--font-logo);font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo i{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;font-style:normal;font-size:18px}
+.logo b{color:var(--brand)}
+.lang{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.lang select{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 18px;display:grid;gap:16px}
+h1{font-size:28px;line-height:1.25;margin:0;text-wrap:balance}
+h2{font-size:23px;line-height:1.3;margin:0;text-wrap:balance}
+.trust{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.trust li{display:flex;gap:10px;align-items:center;font-size:17px}
+.trust li span{flex:none;width:28px;height:28px;border-radius:50%;background:var(--good-soft);color:var(--good);display:grid;place-items:center;font-weight:700;font-size:15px}
+button{font:inherit;cursor:pointer}
+.big{width:100%;min-height:58px;border:none;border-radius:14px;background:var(--brand);color:#fff;font-size:20px;font-weight:700;padding:12px 16px}
+.big:disabled{opacity:.6}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;min-height:62px;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:12px 14px;font-size:19px;font-weight:600}
+.opt:hover{border-color:var(--brand)}
+.opt.sel{border-color:var(--brand);background:var(--brand-soft)}
+.opt .ic{flex:none;font-size:28px;line-height:1;width:36px;text-align:center}
+.opt small{display:block;font-size:15px;font-weight:400;color:var(--muted);margin-top:2px}
+.prog{display:grid;gap:6px}
+.prog .bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden}
+.prog .bar i{display:block;height:100%;background:var(--brand);transition:width .25s}
+.prog .lbl{font-size:14px;color:var(--muted)}
+.backbtn{background:none;border:none;color:var(--brand);font-weight:600;font-size:17px;padding:6px 0;justify-self:start}
+.hint{font-size:15px;color:var(--muted);margin:0}
+label.f{display:grid;gap:6px;font-weight:600;font-size:17px}
+input[type=text],input[type=tel]{font:inherit;font-size:20px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+input:focus-visible,button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.notice{background:var(--brand-soft);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.55}
+.check{display:flex;gap:12px;align-items:flex-start;font-size:16px}
+.check input{width:24px;height:24px;margin:1px 0 0;flex:none;accent-color:var(--brand)}
+.err{color:var(--bad);font-size:15px;font-weight:600;margin:0;min-height:1em}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+/* result */
+.verdict{display:grid;justify-items:center;text-align:center;gap:12px}
+.badge{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-size:52px;font-weight:800}
+.badge.strong{background:var(--good-soft);color:var(--good)}
+.badge.good{background:var(--warn-soft);color:var(--warn)}
+.badge.weak{background:var(--bad-soft);color:var(--bad)}
+@media (prefers-reduced-motion:no-preference){.badge{animation:pop .45s ease-out}@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}}
+.amt{background:var(--bg);border-radius:14px;padding:14px;text-align:center}
+.amt .k{font-size:15px;color:var(--muted)}
+.amt .v{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
+.amt .s{font-size:15px;color:var(--muted)}
+.tips{display:grid;gap:8px}
+.tips h3{margin:0;font-size:19px}
+.tips ul{margin:0;padding-left:22px;display:grid;gap:8px;font-size:16px}
+.callnote{border-left:4px solid var(--good);padding:8px 12px;background:var(--good-soft);border-radius:0 10px 10px 0;font-size:16px}
+footer{margin-top:18px;font-size:13px;color:var(--muted);display:grid;gap:6px;text-align:center}
+footer a{color:var(--muted)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="logo" href="#" id="home"><i aria-hidden="true">₹</i><span>LoanCheck<b>BLR</b></span></a>
+    <label class="lang" for="langSel"><span id="langLabel">Language</span>
+      <select id="langSel"></select>
+    </label>
+  </header>
+  <main id="app" class="card" aria-live="polite"></main>
+  <footer>
+    <span id="foot"></span>
+    <span><a href="privacy.html" id="privLink">Privacy policy</a> · © LoanCheckBLR, Bengaluru<span id="adminWrap" class="hide"> · <a id="adminLink" href="#" target="_blank" rel="noopener">Admin</a></span></span>
+  </footer>
+</div>
+
+<script id="engine">
+/* ====== PURE ENGINE: lender rules + scoring (no DOM) ====== */
+const LENDERS = [
+  // ---- Personal loans
+  {p:"pl",name:"HDFC Bank",kind:"Bank",emp:["sal"],minAge:21,maxMat:60,minInc:25000,expTotal:24,expCur:12,cibil:720,
+   src:"https://www.hdfc.bank.in/personal-loan/eligibility-criteria",note:"Pvt Ltd / PSU employees"},
+  {p:"pl",name:"ICICI Bank",kind:"Bank",emp:["sal","self"],
+   sal:{minAge:20,maxMat:58,minInc:30000,expTotal:24,cibil:700},
+   self:{minAge:23,maxMat:65,vintage:2,minAnnual:200000},
+   src:"https://www.icici.bank.in/personal-banking/loans/personal-loan/eligibility",note:"Self-employed: profit after tax ₹2L+"},
+  {p:"pl",name:"SBI (Xpress Credit)",kind:"Bank",emp:["sal"],minAge:21,maxMat:58,minInc:25000,needBank:"sbi",employers:["govt","mnc","pvt"],
+   src:"https://sbi.co.in/web/personal-banking/loans",note:"Needs SBI salary account; EMI up to 60% of income"},
+  {p:"pl",name:"Axis Bank",kind:"Bank",emp:["sal"],minAge:21,maxMat:60,minInc:25000,ownBank:{bank:"axis",inc:15000},expTotal:12,cibil:700,
+   src:"https://www.axis.bank.in/loans/personal-loan/personal-loan-for-rs-40000-salary",note:"₹15,000 if salary is in Axis"},
+  {p:"pl",name:"Bajaj Finance",kind:"NBFC",emp:["sal"],minAge:21,maxMat:80,minInc:25001,cibil:685,
+   src:"https://www.bajajfinserv.in/personal-loan-eligibility-calculator",note:"Income floor varies by city"},
+  {p:"pl",name:"Tata Capital",kind:"NBFC",emp:["sal"],minAge:21,maxMat:58,minInc:20000,expTotal:24,expCur:12,cibil:725,
+   src:"https://www.tatacapital.com/personal-loan",note:"725+ preferred"},
+  {p:"pl",name:"Moneyview",kind:"Fintech",emp:["sal","self"],minAge:21,maxMat:57,minInc:25000,minAnnual:300000,cibil:650,needBankCredit:true,
+   src:"https://moneyview.in/personal-loan-eligibility-check",note:"Income must come into a bank account"},
+  {p:"pl",name:"KreditBee",kind:"Fintech",emp:["sal"],minAge:21,maxMat:60,minInc:10000,
+   src:"https://www.paisabazaar.com/personal-loan/kreditbee/eligibility",note:"Secondary source; small-ticket loans",secondary:true},
+  // ---- Business loans
+  {p:"bl",name:"HDFC Bank",kind:"Bank",emp:["self"],minAge:21,maxMat:65,turnover:4000000,vintage:3,minAnnual:300000,itrYears:2,
+   src:"https://www.hdfc.bank.in/business-loan/eligibility",note:"Profit in last 2 years; 5 yrs total business experience"},
+  {p:"bl",name:"ICICI Bank",kind:"Bank",emp:["self"],minAge:21,maxMat:65,vintage:3,
+   src:"https://www.icici.bank.in/personal-banking/loans/personal-loan/business-instalment-loan",note:"Other limits set case by case"},
+  {p:"bl",name:"Bajaj Finance",kind:"NBFC",emp:["self"],minAge:21,maxMat:80,vintage:3,cibil:650,
+   src:"https://www.bajajfinserv.in/business-loan-eligibility-and-documents",note:"₹2 lakh – ₹80 lakh"},
+  {p:"bl",name:"Lendingkart",kind:"NBFC",emp:["self"],minAge:18,maxMat:65,vintage:1,turnover:300000,cibil:650,
+   src:"https://www.lendingkart.com/faqs/faq-category/productsbusiness-loans-eligibility/",note:"₹75,000 sales in last 3 months"},
+  {p:"bl",name:"Tata Capital",kind:"NBFC",emp:["self"],minAge:21,maxMat:65,vintage:2,
+   src:"https://www.tatacapital.com/blog/loan-for-business/know-your-business-loan-eligibility-at-your-fingertips/",note:"Stable or rising turnover"},
+  // ---- Home loans
+  {p:"hl",name:"HDFC Bank",kind:"Bank",emp:["sal","self"],minAge:18,maxMat:70,
+   sal:{minInc:10000},self:{minAnnual:200000},
+   src:"https://homeloans.hdfc.bank.in/home-loan-eligibility-calculator",note:"Tenure up to 30 years"},
+  {p:"hl",name:"SBI",kind:"Bank",emp:["sal","self"],minAge:18,maxMat:70,cibil:650,
+   self:{vintage:3},
+   src:"https://www.nobroker.in/home-loan/sbi-bank/regular-home-loan",note:"Secondary source; 750+ for best rate",secondary:true},
+  {p:"hl",name:"LIC Housing Finance",kind:"HFC",emp:["sal","self"],minAge:21,maxAge:50,maxMat:70,cibil:600,
+   src:"https://www.nobroker.in/home-loan/lic-housing-finance",note:"Secondary source; apply by age 50",secondary:true},
+  {p:"hl",name:"Bajaj Housing Finance",kind:"HFC",emp:["sal","self"],cibil:725,
+   sal:{minAge:23,maxMat:67,expTotal:36},self:{minAge:23,maxMat:70,vintage:3},
+   src:"https://www.bajajfinserv.in/home-loan-eligibility-calculator",note:"Up to 32-year tenure"},
+  // ---- Loan against property
+  {p:"lap",name:"HDFC Bank",kind:"Bank",emp:["sal","self"],minAge:21,maxMat:65,needOwn:true,
+   src:"https://homeloans.hdfc.bank.in/non-housing-loans/loan-against-property",note:"Tenure up to 15 years"},
+  {p:"lap",name:"ICICI Bank",kind:"Bank",emp:["sal","self"],minAge:25,maxMat:65,needOwn:true,
+   src:"https://www.icici.bank.in/personal-banking/loans/home-loan/loan-against-property",note:"Up to 75% of property value"},
+  {p:"lap",name:"Bajaj Finance",kind:"NBFC",emp:["sal","self"],minAge:25,maxMat:85,cibil:650,needOwn:true,
+   sal:{expTotal:36},self:{vintage:5},
+   src:"https://www.bajajfinserv.in/loan-against-property-eligibility-and-documents",note:"700+ ideal"}
+];
+
+const PRODUCT = {
+  pl:{label:"Personal loan",tenure:5,cap:4000000,rates:{750:11,700:13,650:16,600:20,low:24,unknown:14}},
+  bl:{label:"Business loan",tenure:3,cap:8000000,rates:{750:17,700:19,650:21,600:24,low:26,unknown:20}},
+  hl:{label:"Home loan",tenure:30,cap:Infinity,rates:{750:8,700:8.5,650:9.25,600:9.75,low:10.5,unknown:8.75}},
+  lap:{label:"Loan against property",tenure:15,cap:Infinity,rates:{750:9.5,700:10.5,650:11.5,600:12.5,low:14,unknown:11}}
+};
+const CIBIL_RANGE = {750:[750,900],700:[700,749],650:[650,699],600:[600,649],low:[300,599],unknown:null};
+const CIBIL_LABEL = {750:"750+",700:"700–749",650:"650–699",600:"600–649",low:"Below 600",unknown:"Unknown"};
+
+function rulesFor(L, emp){ return Object.assign({}, L, L[emp]||{}); }
+
+function monthlyIncome(p){ return p.emp==="sal" ? (p.income||0) : (p.profit||0)/12; }
+
+function foirLimit(inc){ return inc<=25000?0.40: inc<=50000?0.50: inc<=100000?0.55:0.60; }
+
+function emiFor(P, ratePct, years){
+  if(!(P>0)) return 0;
+  const r = ratePct/1200, n = Math.round(years*12);
+  return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+}
+function principalFor(emi, ratePct, years){
+  if(!(emi>0)) return 0;
+  const r = ratePct/1200, n = Math.round(years*12);
+  return emi*(1-Math.pow(1+r,-n))/r;
+}
+function tenureYears(p){
+  const prod = PRODUCT[p.product];
+  const endAge = p.emp==="sal"?65:70;
+  let t = Math.min(prod.tenure, endAge - p.age);
+  return Math.max(1, t);
+}
+function hlLtvCap(v){
+  if(!(v>0)) return 0;
+  const c1 = Math.min(0.9*v, 3000000);
+  const c2 = 0.8*v>3000000 ? Math.min(0.8*v, 7500000) : 0;
+  const c3 = 0.75*v>7500000 ? 0.75*v : 0;
+  return Math.max(c1,c2,c3);
+}
+
+/* Check one lender. Returns {status:"yes"|"likely"|"no", reasons:[...]} */
+function checkLender(L, p){
+  const R = rulesFor(L, p.emp);
+  const fails = [], soft = [];
+  if(!R.emp.includes(p.emp)) fails.push(p.emp==="sal"?"Only for self-employed":"Only for salaried");
+  if(R.minAge && p.age < R.minAge) fails.push("Minimum age "+R.minAge);
+  if(R.maxAge && p.age > R.maxAge) fails.push("Must apply by age "+R.maxAge);
+  if(R.maxMat && R.maxMat - p.age < 1) fails.push("Loan must end by age "+R.maxMat);
+  if(p.emp==="sal"){
+    const inc = p.income||0;
+    let need = R.minInc;
+    if(R.ownBank && p.salBank===R.ownBank.bank) need = R.ownBank.inc;
+    if(need && inc < need) fails.push("Salary below ₹"+need.toLocaleString("en-IN"));
+    if(R.needBank && p.salBank!==R.needBank) fails.push("Needs salary account with "+R.needBank.toUpperCase());
+    if(R.employers && !R.employers.includes(p.employer)) fails.push("Employer type not covered");
+    if(R.expTotal && (p.expTotal||0)*12 < R.expTotal) fails.push((R.expTotal/12)+"+ yrs total experience");
+    if(R.expCur && (p.expCur||0) < R.expCur) fails.push(R.expCur+"+ months in current job");
+    if((R.needBankCredit) && p.salBank==="cash") fails.push("Salary must come into a bank");
+    if(p.salBank==="cash" && !R.needBankCredit) soft.push("Cash salary is hard to prove");
+  } else {
+    if(R.minAnnual && (p.profit||0) < R.minAnnual) fails.push("ITR income below ₹"+R.minAnnual.toLocaleString("en-IN"));
+    if(R.turnover && (p.turnover||0) < R.turnover) fails.push("Turnover below ₹"+R.turnover.toLocaleString("en-IN"));
+    if(R.vintage && (p.vintage||0) < R.vintage) fails.push("Business must be "+R.vintage+"+ yrs old");
+    if(R.itrYears && (p.itrYears||0) < R.itrYears) fails.push(R.itrYears+" years of ITR");
+  }
+  if(R.needOwn && p.ownName==="no") fails.push("Property must be in your name");
+  if(R.cibil){
+    const rg = CIBIL_RANGE[p.cibil];
+    if(!rg) soft.push("CIBIL "+R.cibil+"+ needed");
+    else if(rg[1] < R.cibil) fails.push("CIBIL "+R.cibil+"+ needed");
+    else if(rg[0] < R.cibil) soft.push("CIBIL may be just under "+R.cibil);
+  }
+  if(p.settled==="yes") fails.push("Past settlement / write-off");
+  const status = fails.length ? "no" : (soft.length ? "likely" : "yes");
+  return {status, reasons: fails.length?fails:soft};
+}
+
+/* Rank matched lenders to decide where to log in the file first. */
+const OWN_BANK = {hdfc:"HDFC Bank",icici:"ICICI Bank",sbi:"SBI",axis:"Axis Bank"};
+const KIND_WHY = {Bank:"lowest interest rate",HFC:"home-loan specialist",NBFC:"faster approval, more flexible on CIBIL",Fintech:"quick small loan, but high interest"};
+function suggestLogin(p, matches){
+  const good = ["750","700"].includes(String(p.cibil)) && p.bounces==0;
+  const base = good ? {Bank:40,HFC:36,NBFC:28,Fintech:8} : {Bank:12,HFC:22,NBFC:36,Fintech:28};
+  const own = p.emp==="sal" ? OWN_BANK[p.salBank] : null;
+  return matches.map(m=>{
+    let s = base[m.L.kind]||10; const why = [KIND_WHY[m.L.kind]];
+    if(m.status==="yes") s += 20; else { s += 8; why.push("confirm CIBIL first"); }
+    if(own && m.L.name.startsWith(own)){ s += 30; why.unshift("salary account here"); }
+    return {name:m.L.name, kind:m.L.kind, s, why:why.join(", ")};
+  }).sort((a,b)=>b.s-a.s).slice(0,2);
+}
+
+function evaluate(p){
+  const prod = PRODUCT[p.product];
+  const lenders = LENDERS.filter(L=>L.p===p.product);
+  const results = lenders.map(L=>({L, ...checkLender(L,p)}));
+  const matches = results.filter(r=>r.status!=="no");
+  const inc = monthlyIncome(p);
+  const rate = prod.rates[p.cibil];
+  const years = tenureYears(p);
+  const foir = foirLimit(inc);
+  const room = Math.max(0, inc*foir - (p.emi||0));
+  let max = principalFor(room, rate, years);
+  max = Math.min(max, prod.cap);
+  if(p.product==="hl") max = Math.min(max, hlLtvCap(p.propValue||0));
+  if(p.product==="lap") max = Math.min(max, (p.propValue||0)*(p.propType==="com"?0.5:0.6));
+  if(p.product==="bl") max = Math.min(max, 0.2*(p.turnover||0));
+  if(!matches.length) max = 0;
+  max = Math.max(0, Math.floor(max/10000)*10000);
+  const askEmi = emiFor(p.amount||0, rate, years);
+  const ratio = inc>0 ? ((p.emi||0)+askEmi)/inc : 9;
+
+  // ---- score
+  const parts = {};
+  parts.cibil = {750:35,700:28,650:18,600:8,low:0,unknown:15}[p.cibil];
+  parts.emi = ratio<=0.40?25: ratio<=0.50?20: ratio<=0.60?12: ratio<=0.70?5:0;
+  parts.bounce = {0:15,1:8,2:0}[p.bounces];
+  if(p.emp==="sal"){
+    const cur=p.expCur||0, tot=(p.expTotal||0)*12;
+    parts.stab = (cur>=12&&tot>=24)?15: cur>=6?10:3;
+    parts.prof = {govt:10,mnc:9,pvt:7,other:4}[p.employer] - (p.salBank==="cash"?4:0);
+  } else {
+    const v=p.vintage||0;
+    parts.stab = v>=3?15: v>=2?10: v>=1?6:2;
+    parts.prof = {2:10,1:6,0:0}[p.itrYears] + (p.gst==="no"?-2:0);
+  }
+  let score = Object.values(parts).reduce((a,b)=>a+b,0);
+  if((p.amount||0) > max && max>0) score -= 10;
+  if(p.settled==="yes") score = Math.min(score,35);
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  let band = score>=75?"Strong": score>=55?"Good":"Needs work";
+  // Strong needs a known good CIBIL, a clean record and the asked amount within limit
+  if(band==="Strong" && (!["750","700"].includes(String(p.cibil)) || p.bounces>0 || (p.amount||0)>max)){ band="Good"; score=Math.min(score,74); }
+  if(!matches.length){ band = "Needs work"; score = Math.min(score,40); }
+  const tier = band==="Strong"?"hot": band==="Good"?"warm":"cold";
+
+  // ---- factor checklist (C-E-B-I-S)
+  const checks = [];
+  const cb = p.cibil;
+  checks.push({lvl: cb==="750"||cb==="700"?"ok": cb==="650"||cb==="unknown"?"mid":"no",
+    txt:"CIBIL score: "+CIBIL_LABEL[cb]});
+  checks.push({lvl: ratio<=0.5?"ok": ratio<=0.65?"mid":"no",
+    txt:"EMIs would take "+Math.round(Math.min(ratio,9)*100)+"% of income"+(p.amount?" (with the new loan)":"")});
+  checks.push({lvl: p.bounces==0?"ok": p.bounces==1?"mid":"no",
+    txt: p.bounces==0?"No EMI bounces in last 12 months": p.bounces==1?"1 bounce in last 12 months":"2 or more recent bounces"});
+  checks.push({lvl: parts.prof>=7?"ok": parts.prof>=4?"mid":"no",
+    txt: p.emp==="sal" ? (p.salBank==="cash"?"Salary paid in cash":"Salary credited to bank") : (p.itrYears==2?"ITR filed 2+ years": p.itrYears==1?"ITR filed 1 year":"No ITR filed")});
+  checks.push({lvl: parts.stab>=15?"ok": parts.stab>=10?"mid":"no",
+    txt: p.emp==="sal" ? ((p.expCur||0)+" months in current job") : ((p.vintage||0)+" years in business")});
+  if(p.settled==="yes") checks.push({lvl:"no",txt:"Past settlement or write-off on record"});
+
+  // ---- tips
+  const tips = [];
+  if(cb==="low"||cb==="600") tips.push("Raise your CIBIL score above 700 first: pay every EMI and card bill on time for 6 months.");
+  if(cb==="unknown") tips.push("Check your CIBIL score for free before applying. Lenders decide on it.");
+  if(ratio>0.6) tips.push("Your EMIs would be too high for your income. Ask for a smaller amount, a longer tenure, or close a small loan first.");
+  if(p.bounces>0) tips.push("Avoid any more bounces. Most lenders check the last 6–12 months of bank statements.");
+  if(p.emp==="sal" && (p.expCur||0)<12) tips.push("Many banks want 12 months in your current job. NBFCs and apps are more flexible.");
+  if(p.emp==="self" && p.itrYears<2) tips.push("File ITR every year. Most banks want 2 years of returns.");
+  if(p.emp==="self" && (p.vintage||0)<3) tips.push("Banks usually want a 3-year-old business. Lendingkart-type NBFCs accept 1 year.");
+  if(p.settled==="yes") tips.push("A settled loan stays on your report. Paying the full balance and getting a 'closed' status helps.");
+  if((p.amount||0)>max && max>0) tips.push("You asked for more than your estimated limit. Adding an earning co-applicant can raise it.");
+  if(p.product==="lap" && p.ownName==="no") tips.push("For LAP the property owner must be an applicant. Apply together with the owner.");
+
+  const login = suggestLogin(p, matches);
+  return {results, matches, max, askEmi, rate, years, foir, score, band, tier, checks, tips, parts, inc, login};
+}
+if(typeof module!=="undefined") module.exports={LENDERS,PRODUCT,evaluate,checkLender,hlLtvCap,emiFor,principalFor};
+</script>
+<script>const I18N = {
+en:{_name:"English",tagline:"Will you get a loan? Find out in 1 minute.",start:"Check now",free:"Free",noCibil:"Does not affect your CIBIL score",oneMin:"Takes 1 minute",langLabel:"Language",back:"Back",step:"Question {n} of {t}",
+q_product:"Which loan do you need?",pl:"Personal loan",pl_d:"For wedding, medical, travel or any need",bl:"Business loan",bl_d:"For your shop or business",hl:"Home loan",hl_d:"To buy or build a house",lap:"Loan against property",lap_d:"Loan by keeping your house or shop as security",
+q_emp:"How do you earn money?",sal:"Job with monthly salary",self:"Own business / shop",q_age:"Your age?",years:"{x} years",
+q_income_sal:"Monthly salary in hand?",q_income_self:"Monthly earning from business (after expenses)?",q_turnover:"Yearly sales of your business?",
+q_jobtime:"How long in your current job?",jobtime:["Less than 6 months","6 to 12 months","1 to 2 years","More than 2 years"],
+q_bizage:"How old is your business?",bizage:["Less than 1 year","1 to 2 years","2 to 3 years","3 to 5 years","More than 5 years"],
+q_itr:"Do you file income tax return (ITR)?",itr:["Yes, 2 years or more","Yes, 1 year","No"],
+q_salmode:"How do you get your salary?",salmode:["In bank account","In cash"],
+q_emi:"How much EMI do you pay now every month?",noEmi:"No EMI",
+q_cibil:"Your CIBIL score?",cibil:["750 or more","700 – 749","650 – 699","Below 650","Don't know"],cibil_hint:"Don't know? It's okay. You can check it free on the CIBIL website or app.",
+q_missed:"Did you miss any EMI in the last 1 year?",missed:["No, never","Once","More than once"],
+q_settled:"Did you ever close a loan by paying less than you owed (settlement)?",yesno:["Yes","No"],
+q_propval:"Value of the property?",q_proptype:"Type of property?",proptype:["House / flat","Shop / office"],q_propown:"Is the property in your name?",
+q_amount:"How much loan do you need?",
+contact_title:"Last step: your name and mobile number",name:"Your name",phone:"Mobile number",
+notice:"We save your name, number and answers. A LoanCheckBLR advisor may call you once to help. We share your details with a bank or loan agent only if you want to apply. No spam. We never sell your number.",
+nocall:"Don't call me, only show my result",agree:"I have read this and I agree",privacy:"Privacy policy",showResult:"Show my result",
+err_name:"Please enter your name",err_phone:"Please enter a 10-digit mobile number",err_agree:"Please tick 'I agree' to continue",
+res_strong:"Good news! You can likely get this loan.",res_good:"You have a fair chance of getting this loan.",res_weak:"Getting this loan looks hard right now.",res_none:"Your details don't meet the basic rules of banks right now.",
+upto:"You may get up to",emi_line:"EMI about {emi} per month for {yrs} years",lenders_line:"Your profile matches {m} of {t} banks and finance companies we check.",tips_title:"How to improve your chances",
+tip_cibil_low:"Pay every EMI and credit card bill on time for 6 months to raise your CIBIL score.",tip_cibil_unknown:"Check your CIBIL score for free before applying.",tip_emi_high:"Your EMIs are too high for your income. Ask for a smaller loan or close a small loan first.",tip_missed:"Don't miss any more EMIs. Banks check the last 6–12 months.",tip_job_new:"Many banks want at least 1 year in your current job.",tip_itr:"File your income tax return every year. Banks want 2 years of ITR.",tip_bizage:"Banks usually want a business that is 3 years old. Some finance companies accept 1 year.",tip_settled:"A settled loan stays on your record. Paying it fully and getting it marked 'closed' helps.",tip_amount:"You asked for more than your limit. Adding a family member who earns can help.",tip_cash:"Get your salary in a bank account. Banks need proof of salary.",tip_lap_owner:"The property owner must also apply for this loan.",
+call_yes:"Our advisor will call you soon. No spam, only one call.",call_no:"You chose no calls. If you need help later, check again and allow a call.",again:"Check again",
+disclaimer:"This is an estimate based on banks' public rules. The final decision is always the bank's. LoanCheckBLR is not a bank.",sending:"Please wait…",
+m_upto:"Up to {x}",m_above:"Above {x}",lakh:"lakh",crore:"crore"},
+
+hi:{_name:"हिंदी",tagline:"क्या आपको लोन मिलेगा? 1 मिनट में जानें।",start:"अभी चेक करें",free:"बिल्कुल फ्री",noCibil:"आपके CIBIL स्कोर पर कोई असर नहीं",oneMin:"सिर्फ 1 मिनट",langLabel:"भाषा",back:"पीछे",step:"सवाल {n} / {t}",
+q_product:"आपको कौन सा लोन चाहिए?",pl:"पर्सनल लोन",pl_d:"शादी, इलाज, घूमना या कोई भी ज़रूरत",bl:"बिज़नेस लोन",bl_d:"अपनी दुकान या बिज़नेस के लिए",hl:"होम लोन",hl_d:"घर खरीदने या बनाने के लिए",lap:"प्रॉपर्टी पर लोन",lap_d:"अपना घर या दुकान गिरवी रखकर लोन",
+q_emp:"आप कमाई कैसे करते हैं?",sal:"नौकरी, हर महीने सैलरी",self:"अपना बिज़नेस / दुकान",q_age:"आपकी उम्र?",years:"{x} साल",
+q_income_sal:"हर महीने हाथ में कितनी सैलरी आती है?",q_income_self:"बिज़नेस से हर महीने कितनी कमाई होती है (खर्च के बाद)?",q_turnover:"आपके बिज़नेस की साल भर की बिक्री (टर्नओवर)?",
+q_jobtime:"अभी की नौकरी में कितने समय से हैं?",jobtime:["6 महीने से कम","6 से 12 महीने","1 से 2 साल","2 साल से ज़्यादा"],
+q_bizage:"आपका बिज़नेस कितना पुराना है?",bizage:["1 साल से कम","1 से 2 साल","2 से 3 साल","3 से 5 साल","5 साल से ज़्यादा"],
+q_itr:"क्या आप इनकम टैक्स रिटर्न (ITR) भरते हैं?",itr:["हाँ, 2 साल या ज़्यादा","हाँ, 1 साल","नहीं"],
+q_salmode:"सैलरी कैसे मिलती है?",salmode:["बैंक खाते में","नकद (कैश) में"],
+q_emi:"अभी हर महीने कितनी EMI भरते हैं?",noEmi:"कोई EMI नहीं",
+q_cibil:"आपका CIBIL स्कोर?",cibil:["750 या ज़्यादा","700 – 749","650 – 699","650 से कम","पता नहीं"],cibil_hint:"पता नहीं? कोई बात नहीं। CIBIL की वेबसाइट या ऐप पर फ्री में देख सकते हैं।",
+q_missed:"पिछले 1 साल में कोई EMI छूटी?",missed:["नहीं, कभी नहीं","एक बार","एक से ज़्यादा बार"],
+q_settled:"क्या कभी बैंक से सेटलमेंट करके, पूरा पैसा दिए बिना लोन बंद किया है?",yesno:["हाँ","नहीं"],
+q_propval:"प्रॉपर्टी की कीमत कितनी है?",q_proptype:"प्रॉपर्टी किस तरह की है?",proptype:["घर / फ्लैट","दुकान / ऑफिस"],q_propown:"क्या प्रॉपर्टी आपके नाम पर है?",
+q_amount:"आपको कितना लोन चाहिए?",
+contact_title:"आखिरी कदम: अपना नाम और मोबाइल नंबर",name:"आपका नाम",phone:"मोबाइल नंबर",
+notice:"हम आपका नाम, नंबर और जवाब सेव करते हैं। LoanCheckBLR का सलाहकार मदद के लिए आपको एक बार कॉल कर सकता है। आपकी जानकारी बैंक या लोन एजेंट को तभी दी जाएगी जब आप लोन के लिए अप्लाई करना चाहें। कोई स्पैम नहीं। हम आपका नंबर कभी नहीं बेचते।",
+nocall:"मुझे कॉल मत करना, सिर्फ रिज़ल्ट दिखाओ",agree:"मैंने पढ़ लिया है और मैं सहमत हूँ",privacy:"प्राइवेसी पॉलिसी",showResult:"मेरा रिज़ल्ट दिखाओ",
+err_name:"कृपया अपना नाम लिखें",err_phone:"कृपया 10 अंकों का मोबाइल नंबर लिखें",err_agree:"आगे बढ़ने के लिए 'सहमत हूँ' पर टिक करें",
+res_strong:"अच्छी खबर! यह लोन मिलने की अच्छी संभावना है।",res_good:"यह लोन मिलने की ठीक-ठाक संभावना है।",res_weak:"अभी यह लोन मिलना मुश्किल लग रहा है।",res_none:"आपकी जानकारी अभी बैंकों के ज़रूरी नियमों से मेल नहीं खाती।",
+upto:"आपको इतना तक लोन मिल सकता है",emi_line:"EMI लगभग {emi} हर महीने, {yrs} साल के लिए",lenders_line:"हमारे चेक किए गए {t} बैंक/फाइनेंस कंपनियों में से {m} के नियमों से आपकी प्रोफ़ाइल मेल खाती है।",tips_title:"संभावना बढ़ाने के तरीके",
+tip_cibil_low:"अपना CIBIL स्कोर बढ़ाने के लिए 6 महीने तक हर EMI और क्रेडिट कार्ड बिल समय पर भरें।",tip_cibil_unknown:"अप्लाई करने से पहले अपना CIBIL स्कोर फ्री में चेक करें।",tip_emi_high:"आपकी कमाई के हिसाब से EMI ज़्यादा है। कम लोन माँगें या पहले कोई छोटा लोन बंद करें।",tip_missed:"अब कोई EMI न छूटे। बैंक पिछले 6-12 महीने देखते हैं।",tip_job_new:"कई बैंक चाहते हैं कि आप अभी की नौकरी में कम से कम 1 साल से हों।",tip_itr:"हर साल ITR भरें। बैंक 2 साल का ITR माँगते हैं।",tip_bizage:"बैंक आमतौर पर 3 साल पुराना बिज़नेस चाहते हैं। कुछ फाइनेंस कंपनियाँ 1 साल वाला भी लेती हैं।",tip_settled:"सेटल किया लोन आपके रिकॉर्ड में रहता है। पूरा पैसा चुकाकर उसे 'क्लोज़्ड' करवाने से मदद मिलती है।",tip_amount:"आपने अपनी लिमिट से ज़्यादा लोन माँगा है। कमाने वाले परिवार के सदस्य को साथ जोड़ने से मदद मिल सकती है।",tip_cash:"सैलरी बैंक खाते में लें। बैंक को सैलरी का सबूत चाहिए।",tip_lap_owner:"प्रॉपर्टी के मालिक को भी इस लोन में साथ अप्लाई करना होगा।",
+call_yes:"हमारा सलाहकार जल्द आपको कॉल करेगा। कोई स्पैम नहीं, सिर्फ एक कॉल।",call_no:"आपने कॉल के लिए मना किया है। बाद में मदद चाहिए तो दोबारा चेक करें और कॉल की अनुमति दें।",again:"फिर से चेक करें",
+disclaimer:"यह बैंकों के पब्लिक नियमों पर आधारित अंदाज़ा है। आखिरी फैसला हमेशा बैंक का होता है। LoanCheckBLR कोई बैंक नहीं है।",sending:"कृपया रुकें…",
+m_upto:"{x} तक",m_above:"{x} से ज़्यादा",lakh:"लाख",crore:"करोड़"},
+
+bn:{_name:"বাংলা",tagline:"আপনি কি লোন পাবেন? 1 মিনিটে জেনে নিন।",start:"এখনই চেক করুন",free:"একদম ফ্রি",noCibil:"আপনার CIBIL স্কোরে কোনো প্রভাব নেই",oneMin:"মাত্র 1 মিনিট",langLabel:"ভাষা",back:"পিছনে",step:"প্রশ্ন {n} / {t}",
+q_product:"আপনার কোন লোন দরকার?",pl:"পার্সোনাল লোন",pl_d:"বিয়ে, চিকিৎসা, বেড়ানো বা যেকোনো দরকারে",bl:"বিজনেস লোন",bl_d:"আপনার দোকান বা ব্যবসার জন্য",hl:"হোম লোন",hl_d:"বাড়ি কেনা বা বানানোর জন্য",lap:"সম্পত্তির উপর লোন",lap_d:"নিজের বাড়ি বা দোকান বন্ধক রেখে লোন",
+q_emp:"আপনি কীভাবে রোজগার করেন?",sal:"চাকরি, প্রতি মাসে বেতন",self:"নিজের ব্যবসা / দোকান",q_age:"আপনার বয়স?",years:"{x} বছর",
+q_income_sal:"প্রতি মাসে হাতে কত বেতন পান?",q_income_self:"ব্যবসা থেকে প্রতি মাসে কত আয় হয় (খরচের পরে)?",q_turnover:"আপনার ব্যবসার বছরে মোট বিক্রি (টার্নওভার)?",
+q_jobtime:"এখনকার চাকরিতে কতদিন আছেন?",jobtime:["6 মাসের কম","6 থেকে 12 মাস","1 থেকে 2 বছর","2 বছরের বেশি"],
+q_bizage:"আপনার ব্যবসা কত পুরনো?",bizage:["1 বছরের কম","1 থেকে 2 বছর","2 থেকে 3 বছর","3 থেকে 5 বছর","5 বছরের বেশি"],
+q_itr:"আপনি কি ইনকাম ট্যাক্স রিটার্ন (ITR) জমা দেন?",itr:["হ্যাঁ, 2 বছর বা বেশি","হ্যাঁ, 1 বছর","না"],
+q_salmode:"বেতন কীভাবে পান?",salmode:["ব্যাঙ্ক অ্যাকাউন্টে","নগদে (ক্যাশ)"],
+q_emi:"এখন প্রতি মাসে কত EMI দেন?",noEmi:"কোনো EMI নেই",
+q_cibil:"আপনার CIBIL স্কোর?",cibil:["750 বা বেশি","700 – 749","650 – 699","650-এর কম","জানি না"],cibil_hint:"জানেন না? কোনো সমস্যা নেই। CIBIL-এর ওয়েবসাইট বা অ্যাপে ফ্রিতে দেখে নিতে পারেন।",
+q_missed:"গত 1 বছরে কোনো EMI বাদ পড়েছে?",missed:["না, কখনো না","একবার","একাধিকবার"],
+q_settled:"কখনো ব্যাঙ্কের সঙ্গে সেটলমেন্ট করে, পুরো টাকা না দিয়ে লোন বন্ধ করেছেন?",yesno:["হ্যাঁ","না"],
+q_propval:"সম্পত্তির দাম কত?",q_proptype:"কী ধরনের সম্পত্তি?",proptype:["বাড়ি / ফ্ল্যাট","দোকান / অফিস"],q_propown:"সম্পত্তি কি আপনার নামে?",
+q_amount:"আপনার কত টাকার লোন দরকার?",
+contact_title:"শেষ ধাপ: আপনার নাম আর মোবাইল নম্বর",name:"আপনার নাম",phone:"মোবাইল নম্বর",
+notice:"আমরা আপনার নাম, নম্বর আর উত্তর সেভ করি। সাহায্যের জন্য LoanCheckBLR-এর একজন পরামর্শদাতা আপনাকে একবার ফোন করতে পারেন। আপনি লোনের জন্য আবেদন করতে চাইলে তবেই আপনার তথ্য ব্যাঙ্ক বা লোন এজেন্টকে দেওয়া হবে। কোনো স্প্যাম নয়। আমরা কখনো আপনার নম্বর বিক্রি করি না।",
+nocall:"আমাকে ফোন করবেন না, শুধু রেজাল্ট দেখান",agree:"আমি পড়েছি এবং রাজি",privacy:"প্রাইভেসি পলিসি",showResult:"আমার রেজাল্ট দেখান",
+err_name:"দয়া করে আপনার নাম লিখুন",err_phone:"দয়া করে 10 সংখ্যার মোবাইল নম্বর লিখুন",err_agree:"এগোতে 'রাজি' বক্সে টিক দিন",
+res_strong:"সুখবর! এই লোন পাওয়ার ভালো সম্ভাবনা আছে।",res_good:"এই লোন পাওয়ার মোটামুটি সম্ভাবনা আছে।",res_weak:"এখন এই লোন পাওয়া কঠিন মনে হচ্ছে।",res_none:"আপনার তথ্য এখন ব্যাঙ্কের জরুরি নিয়মের সঙ্গে মিলছে না।",
+upto:"আপনি এত টাকা পর্যন্ত লোন পেতে পারেন",emi_line:"EMI প্রায় {emi} প্রতি মাসে, {yrs} বছরের জন্য",lenders_line:"আমরা যে {t}টি ব্যাঙ্ক/ফাইন্যান্স কোম্পানি দেখি, তার মধ্যে {m}টির নিয়মের সঙ্গে আপনার প্রোফাইল মিলছে।",tips_title:"সম্ভাবনা বাড়ানোর উপায়",
+tip_cibil_low:"CIBIL স্কোর বাড়াতে 6 মাস প্রতিটি EMI আর ক্রেডিট কার্ডের বিল সময়ে দিন।",tip_cibil_unknown:"আবেদনের আগে ফ্রিতে আপনার CIBIL স্কোর দেখে নিন।",tip_emi_high:"আপনার আয়ের তুলনায় EMI বেশি। কম লোন চান বা আগে একটা ছোট লোন শোধ করুন।",tip_missed:"আর কোনো EMI বাদ দেবেন না। ব্যাঙ্ক গত 6-12 মাস দেখে।",tip_job_new:"অনেক ব্যাঙ্ক চায় আপনি এখনকার চাকরিতে অন্তত 1 বছর আছেন।",tip_itr:"প্রতি বছর ITR জমা দিন। ব্যাঙ্ক 2 বছরের ITR চায়।",tip_bizage:"ব্যাঙ্ক সাধারণত 3 বছরের পুরনো ব্যবসা চায়। কিছু ফাইন্যান্স কোম্পানি 1 বছরেরটাও নেয়।",tip_settled:"সেটলমেন্ট করা লোন আপনার রেকর্ডে থেকে যায়। পুরো টাকা দিয়ে সেটা 'ক্লোজড' করালে সুবিধা হয়।",tip_amount:"আপনি আপনার সীমার চেয়ে বেশি লোন চেয়েছেন। রোজগার করা পরিবারের কাউকে সঙ্গে নিলে সুবিধা হতে পারে।",tip_cash:"বেতন ব্যাঙ্ক অ্যাকাউন্টে নিন। ব্যাঙ্কের বেতনের প্রমাণ দরকার।",tip_lap_owner:"সম্পত্তির মালিককেও এই লোনে একসঙ্গে আবেদন করতে হবে।",
+call_yes:"আমাদের পরামর্শদাতা শিগগির আপনাকে ফোন করবেন। কোনো স্প্যাম নয়, শুধু একবার।",call_no:"আপনি ফোন না করতে বলেছেন। পরে সাহায্য লাগলে আবার চেক করে ফোনের অনুমতি দিন।",again:"আবার চেক করুন",
+disclaimer:"এটা ব্যাঙ্কের প্রকাশ্য নিয়মের ভিত্তিতে একটা আন্দাজ। শেষ সিদ্ধান্ত সবসময় ব্যাঙ্কের। LoanCheckBLR কোনো ব্যাঙ্ক নয়।",sending:"একটু অপেক্ষা করুন…",
+m_upto:"{x} পর্যন্ত",m_above:"{x}-এর বেশি",lakh:"লাখ",crore:"কোটি"},
+
+mr:{_name:"मराठी",tagline:"तुम्हाला लोन मिळेल का? 1 मिनिटात जाणून घ्या.",start:"आत्ता तपासा",free:"पूर्णपणे फ्री",noCibil:"तुमच्या CIBIL स्कोअरवर काहीही परिणाम नाही",oneMin:"फक्त 1 मिनिट",langLabel:"भाषा",back:"मागे",step:"प्रश्न {n} / {t}",
+q_product:"तुम्हाला कोणतं लोन हवं आहे?",pl:"पर्सनल लोन",pl_d:"लग्न, उपचार, प्रवास किंवा कोणतीही गरज",bl:"बिझनेस लोन",bl_d:"तुमच्या दुकानासाठी किंवा व्यवसायासाठी",hl:"होम लोन",hl_d:"घर घेण्यासाठी किंवा बांधण्यासाठी",lap:"प्रॉपर्टीवर लोन",lap_d:"स्वतःचं घर किंवा दुकान गहाण ठेवून लोन",
+q_emp:"तुम्ही कमाई कशी करता?",sal:"नोकरी, दर महिन्याला पगार",self:"स्वतःचा व्यवसाय / दुकान",q_age:"तुमचं वय?",years:"{x} वर्षे",
+q_income_sal:"दर महिन्याला हातात किती पगार येतो?",q_income_self:"व्यवसायातून दर महिन्याला किती कमाई होते (खर्चानंतर)?",q_turnover:"तुमच्या व्यवसायाची वर्षभराची विक्री (टर्नओव्हर)?",
+q_jobtime:"सध्याच्या नोकरीत किती काळापासून आहात?",jobtime:["6 महिन्यांपेक्षा कमी","6 ते 12 महिने","1 ते 2 वर्षे","2 वर्षांपेक्षा जास्त"],
+q_bizage:"तुमचा व्यवसाय किती जुना आहे?",bizage:["1 वर्षापेक्षा कमी","1 ते 2 वर्षे","2 ते 3 वर्षे","3 ते 5 वर्षे","5 वर्षांपेक्षा जास्त"],
+q_itr:"तुम्ही इन्कम टॅक्स रिटर्न (ITR) भरता का?",itr:["हो, 2 वर्षे किंवा जास्त","हो, 1 वर्ष","नाही"],
+q_salmode:"पगार कसा मिळतो?",salmode:["बँक खात्यात","रोख (कॅश)"],
+q_emi:"सध्या दर महिन्याला किती EMI भरता?",noEmi:"कोणतीही EMI नाही",
+q_cibil:"तुमचा CIBIL स्कोअर?",cibil:["750 किंवा जास्त","700 – 749","650 – 699","650 पेक्षा कमी","माहीत नाही"],cibil_hint:"माहीत नाही? काही हरकत नाही. CIBIL च्या वेबसाइटवर किंवा ॲपवर फ्रीमध्ये बघू शकता.",
+q_missed:"गेल्या 1 वर्षात एखादी EMI चुकली का?",missed:["नाही, कधीच नाही","एकदा","एकापेक्षा जास्त वेळा"],
+q_settled:"कधी बँकेशी सेटलमेंट करून, पूर्ण पैसे न भरता लोन बंद केलं आहे का?",yesno:["हो","नाही"],
+q_propval:"प्रॉपर्टीची किंमत किती आहे?",q_proptype:"प्रॉपर्टी कोणत्या प्रकारची आहे?",proptype:["घर / फ्लॅट","दुकान / ऑफिस"],q_propown:"प्रॉपर्टी तुमच्या नावावर आहे का?",
+q_amount:"तुम्हाला किती लोन हवं आहे?",
+contact_title:"शेवटची पायरी: तुमचं नाव आणि मोबाइल नंबर",name:"तुमचं नाव",phone:"मोबाइल नंबर",
+notice:"आम्ही तुमचं नाव, नंबर आणि उत्तरं सेव्ह करतो. मदतीसाठी LoanCheckBLR चा सल्लागार तुम्हाला एकदा कॉल करू शकतो. तुम्हाला लोनसाठी अर्ज करायचा असेल तरच तुमची माहिती बँकेला किंवा लोन एजंटला दिली जाईल. कोणताही स्पॅम नाही. आम्ही तुमचा नंबर कधीच विकत नाही.",
+nocall:"मला कॉल करू नका, फक्त रिझल्ट दाखवा",agree:"मी वाचलं आहे आणि मला मान्य आहे",privacy:"प्रायव्हसी पॉलिसी",showResult:"माझा रिझल्ट दाखवा",
+err_name:"कृपया तुमचं नाव लिहा",err_phone:"कृपया 10 अंकी मोबाइल नंबर लिहा",err_agree:"पुढे जाण्यासाठी 'मान्य आहे' वर टिक करा",
+res_strong:"चांगली बातमी! हे लोन मिळण्याची चांगली शक्यता आहे.",res_good:"हे लोन मिळण्याची बऱ्यापैकी शक्यता आहे.",res_weak:"सध्या हे लोन मिळणं कठीण दिसतंय.",res_none:"तुमची माहिती सध्या बँकांच्या मूलभूत नियमांशी जुळत नाही.",
+upto:"तुम्हाला इतकं लोन मिळू शकतं",emi_line:"EMI सुमारे {emi} दर महिना, {yrs} वर्षांसाठी",lenders_line:"आम्ही तपासत असलेल्या {t} पैकी {m} बँका/फायनान्स कंपन्यांच्या नियमांशी तुमची प्रोफाइल जुळते.",tips_title:"शक्यता वाढवण्याचे मार्ग",
+tip_cibil_low:"CIBIL स्कोअर वाढवण्यासाठी 6 महिने प्रत्येक EMI आणि क्रेडिट कार्ड बिल वेळेवर भरा.",tip_cibil_unknown:"अर्ज करण्याआधी तुमचा CIBIL स्कोअर फ्रीमध्ये तपासा.",tip_emi_high:"तुमच्या कमाईच्या मानाने EMI जास्त आहे. कमी लोन मागा किंवा आधी एखादं छोटं लोन बंद करा.",tip_missed:"आता एकही EMI चुकवू नका. बँका गेले 6-12 महिने बघतात.",tip_job_new:"अनेक बँकांना सध्याच्या नोकरीत किमान 1 वर्ष झालेलं हवं असतं.",tip_itr:"दरवर्षी ITR भरा. बँकांना 2 वर्षांचा ITR हवा असतो.",tip_bizage:"बँकांना साधारणपणे 3 वर्षे जुना व्यवसाय हवा असतो. काही फायनान्स कंपन्या 1 वर्षाचाही घेतात.",tip_settled:"सेटल केलेलं लोन तुमच्या रेकॉर्डवर राहतं. पूर्ण पैसे भरून ते 'क्लोज्ड' करून घेतल्यास फायदा होतो.",tip_amount:"तुम्ही तुमच्या मर्यादेपेक्षा जास्त लोन मागितलं आहे. कमावणाऱ्या घरच्या व्यक्तीला सोबत घेतल्यास मदत होऊ शकते.",tip_cash:"पगार बँक खात्यात घ्या. बँकेला पगाराचा पुरावा लागतो.",tip_lap_owner:"प्रॉपर्टीच्या मालकालाही या लोनसाठी सोबत अर्ज करावा लागेल.",
+call_yes:"आमचा सल्लागार लवकरच तुम्हाला कॉल करेल. स्पॅम नाही, फक्त एक कॉल.",call_no:"तुम्ही कॉल नको म्हणालात. नंतर मदत हवी असेल तर पुन्हा तपासा आणि कॉलला परवानगी द्या.",again:"पुन्हा तपासा",
+disclaimer:"हा बँकांच्या सार्वजनिक नियमांवर आधारित अंदाज आहे. अंतिम निर्णय नेहमी बँकेचा असतो. LoanCheckBLR ही बँक नाही.",sending:"कृपया थांबा…",
+m_upto:"{x} पर्यंत",m_above:"{x} पेक्षा जास्त",lakh:"लाख",crore:"कोटी"},
+
+te:{_name:"తెలుగు",tagline:"మీకు లోన్ వస్తుందా? 1 నిమిషంలో తెలుసుకోండి.",start:"ఇప్పుడే చెక్ చేయండి",free:"పూర్తిగా ఉచితం",noCibil:"మీ CIBIL స్కోర్‌పై ఎలాంటి ప్రభావం ఉండదు",oneMin:"కేవలం 1 నిమిషం",langLabel:"భాష",back:"వెనక్కి",step:"ప్రశ్న {n} / {t}",
+q_product:"మీకు ఏ లోన్ కావాలి?",pl:"పర్సనల్ లోన్",pl_d:"పెళ్లి, వైద్యం, ప్రయాణం లేదా ఏ అవసరానికైనా",bl:"బిజినెస్ లోన్",bl_d:"మీ షాప్ లేదా వ్యాపారం కోసం",hl:"హోమ్ లోన్",hl_d:"ఇల్లు కొనడానికి లేదా కట్టడానికి",lap:"ఆస్తిపై లోన్",lap_d:"మీ ఇల్లు లేదా షాప్ తాకట్టు పెట్టి లోన్",
+q_emp:"మీరు ఎలా సంపాదిస్తారు?",sal:"ఉద్యోగం, నెల నెలా జీతం",self:"సొంత వ్యాపారం / షాప్",q_age:"మీ వయసు?",years:"{x} సంవత్సరాలు",
+q_income_sal:"నెలకు చేతికి ఎంత జీతం వస్తుంది?",q_income_self:"వ్యాపారం నుండి నెలకు ఎంత సంపాదన (ఖర్చుల తర్వాత)?",q_turnover:"మీ వ్యాపారం సంవత్సరం మొత్తం అమ్మకాలు (టర్నోవర్)?",
+q_jobtime:"ప్రస్తుత ఉద్యోగంలో ఎంత కాలంగా ఉన్నారు?",jobtime:["6 నెలల కంటే తక్కువ","6 నుండి 12 నెలలు","1 నుండి 2 సంవత్సరాలు","2 సంవత్సరాల కంటే ఎక్కువ"],
+q_bizage:"మీ వ్యాపారం ఎంత పాతది?",bizage:["1 సంవత్సరం కంటే తక్కువ","1 నుండి 2 సంవత్సరాలు","2 నుండి 3 సంవత్సరాలు","3 నుండి 5 సంవత్సరాలు","5 సంవత్సరాల కంటే ఎక్కువ"],
+q_itr:"మీరు ఇన్‌కమ్ ట్యాక్స్ రిటర్న్ (ITR) ఫైల్ చేస్తారా?",itr:["అవును, 2 సంవత్సరాలు లేదా ఎక్కువ","అవును, 1 సంవత్సరం","లేదు"],
+q_salmode:"జీతం ఎలా వస్తుంది?",salmode:["బ్యాంక్ ఖాతాలో","నగదుగా (క్యాష్)"],
+q_emi:"ఇప్పుడు నెలకు ఎంత EMI కడుతున్నారు?",noEmi:"EMI ఏదీ లేదు",
+q_cibil:"మీ CIBIL స్కోర్?",cibil:["750 లేదా ఎక్కువ","700 – 749","650 – 699","650 కంటే తక్కువ","తెలియదు"],cibil_hint:"తెలియదా? పర్వాలేదు. CIBIL వెబ్‌సైట్ లేదా యాప్‌లో ఉచితంగా చూసుకోవచ్చు.",
+q_missed:"గత 1 సంవత్సరంలో ఏదైనా EMI కట్టలేకపోయారా?",missed:["లేదు, ఎప్పుడూ లేదు","ఒకసారి","ఒకటి కంటే ఎక్కువ సార్లు"],
+q_settled:"ఎప్పుడైనా బ్యాంక్‌తో సెటిల్‌మెంట్ చేసి, పూర్తి డబ్బు కట్టకుండా లోన్ మూసేశారా?",yesno:["అవును","లేదు"],
+q_propval:"ఆస్తి విలువ ఎంత?",q_proptype:"ఆస్తి ఏ రకం?",proptype:["ఇల్లు / ఫ్లాట్","షాప్ / ఆఫీస్"],q_propown:"ఆస్తి మీ పేరు మీద ఉందా?",
+q_amount:"మీకు ఎంత లోన్ కావాలి?",
+contact_title:"చివరి అడుగు: మీ పేరు, మొబైల్ నంబర్",name:"మీ పేరు",phone:"మొబైల్ నంబర్",
+notice:"మేము మీ పేరు, నంబర్, జవాబులు సేవ్ చేస్తాం. సహాయం కోసం LoanCheckBLR సలహాదారు మీకు ఒకసారి కాల్ చేయవచ్చు. మీరు లోన్‌కు అప్లై చేయాలనుకుంటేనే మీ వివరాలు బ్యాంక్ లేదా లోన్ ఏజెంట్‌కు ఇస్తాం. స్పామ్ ఉండదు. మీ నంబర్‌ను మేము ఎప్పుడూ అమ్మము.",
+nocall:"నాకు కాల్ చేయకండి, ఫలితం మాత్రమే చూపించండి",agree:"నేను చదివాను, అంగీకరిస్తున్నాను",privacy:"ప్రైవసీ పాలసీ",showResult:"నా ఫలితం చూపించండి",
+err_name:"దయచేసి మీ పేరు రాయండి",err_phone:"దయచేసి 10 అంకెల మొబైల్ నంబర్ రాయండి",err_agree:"ముందుకు వెళ్లడానికి 'అంగీకరిస్తున్నాను' టిక్ చేయండి",
+res_strong:"శుభవార్త! ఈ లోన్ వచ్చే అవకాశం బాగా ఉంది.",res_good:"ఈ లోన్ వచ్చే అవకాశం ఓ మోస్తరుగా ఉంది.",res_weak:"ఇప్పుడు ఈ లోన్ రావడం కష్టంగా కనిపిస్తోంది.",res_none:"మీ వివరాలు ప్రస్తుతం బ్యాంకుల ప్రాథమిక నియమాలకు సరిపోవడం లేదు.",
+upto:"మీకు ఇంత వరకు లోన్ రావచ్చు",emi_line:"EMI సుమారు నెలకు {emi}, {yrs} సంవత్సరాల పాటు",lenders_line:"మేము చూసే {t} బ్యాంకులు/ఫైనాన్స్ కంపెనీల్లో {m} నియమాలకు మీ ప్రొఫైల్ సరిపోతుంది.",tips_title:"అవకాశం పెంచుకునే మార్గాలు",
+tip_cibil_low:"CIBIL స్కోర్ పెంచుకోవడానికి 6 నెలల పాటు ప్రతి EMI, క్రెడిట్ కార్డ్ బిల్లు సమయానికి కట్టండి.",tip_cibil_unknown:"అప్లై చేసే ముందు మీ CIBIL స్కోర్ ఉచితంగా చూసుకోండి.",tip_emi_high:"మీ సంపాదనకు EMI ఎక్కువగా ఉంది. తక్కువ లోన్ అడగండి లేదా ముందు ఒక చిన్న లోన్ మూసేయండి.",tip_missed:"ఇక ఏ EMI మిస్ చేయకండి. బ్యాంకులు గత 6-12 నెలలు చూస్తాయి.",tip_job_new:"చాలా బ్యాంకులు ప్రస్తుత ఉద్యోగంలో కనీసం 1 సంవత్సరం ఉండాలని కోరుకుంటాయి.",tip_itr:"ప్రతి సంవత్సరం ITR ఫైల్ చేయండి. బ్యాంకులు 2 సంవత్సరాల ITR అడుగుతాయి.",tip_bizage:"బ్యాంకులు సాధారణంగా 3 సంవత్సరాల పాత వ్యాపారం కోరుకుంటాయి. కొన్ని ఫైనాన్స్ కంపెనీలు 1 సంవత్సరం వ్యాపారానికి కూడా ఇస్తాయి.",tip_settled:"సెటిల్ చేసిన లోన్ మీ రికార్డులో ఉంటుంది. పూర్తి డబ్బు కట్టి దాన్ని 'క్లోజ్డ్' చేయించుకుంటే మంచిది.",tip_amount:"మీ పరిమితి కంటే ఎక్కువ లోన్ అడిగారు. సంపాదించే కుటుంబ సభ్యుడిని కలిపి అప్లై చేస్తే సహాయపడుతుంది.",tip_cash:"జీతం బ్యాంక్ ఖాతాలో తీసుకోండి. బ్యాంకులకు జీతం రుజువు కావాలి.",tip_lap_owner:"ఆస్తి యజమాని కూడా ఈ లోన్‌కు కలిసి అప్లై చేయాలి.",
+call_yes:"మా సలహాదారు త్వరలో మీకు కాల్ చేస్తారు. స్పామ్ కాదు, ఒక్క కాల్ మాత్రమే.",call_no:"మీరు కాల్ వద్దన్నారు. తర్వాత సహాయం కావాలంటే మళ్లీ చెక్ చేసి కాల్‌కు అనుమతి ఇవ్వండి.",again:"మళ్లీ చెక్ చేయండి",
+disclaimer:"ఇది బ్యాంకుల పబ్లిక్ నియమాల ఆధారంగా అంచనా మాత్రమే. చివరి నిర్ణయం ఎప్పుడూ బ్యాంకుదే. LoanCheckBLR బ్యాంక్ కాదు.",sending:"దయచేసి వేచి ఉండండి…",
+m_upto:"{x} వరకు",m_above:"{x} కంటే ఎక్కువ",lakh:"లక్ష",crore:"కోటి"},
+
+ta:{_name:"தமிழ்",tagline:"உங்களுக்கு லோன் கிடைக்குமா? 1 நிமிடத்தில் தெரிந்துகொள்ளுங்கள்.",start:"இப்போதே சரிபாருங்கள்",free:"முற்றிலும் இலவசம்",noCibil:"உங்கள் CIBIL ஸ்கோரில் எந்த பாதிப்பும் இல்லை",oneMin:"1 நிமிடம் மட்டுமே",langLabel:"மொழி",back:"பின்னால்",step:"கேள்வி {n} / {t}",
+q_product:"உங்களுக்கு எந்த லோன் வேண்டும்?",pl:"பர்சனல் லோன்",pl_d:"திருமணம், மருத்துவம், பயணம் அல்லது எந்தத் தேவைக்கும்",bl:"பிசினஸ் லோன்",bl_d:"உங்கள் கடை அல்லது தொழிலுக்கு",hl:"ஹோம் லோன்",hl_d:"வீடு வாங்க அல்லது கட்ட",lap:"சொத்தின் மீது லோன்",lap_d:"உங்கள் வீடு அல்லது கடையை அடமானம் வைத்து லோன்",
+q_emp:"நீங்கள் எப்படி சம்பாதிக்கிறீர்கள்?",sal:"வேலை, மாதச் சம்பளம்",self:"சொந்த தொழில் / கடை",q_age:"உங்கள் வயது?",years:"{x} வயது",
+q_income_sal:"மாதம் கைக்கு எவ்வளவு சம்பளம் வருகிறது?",q_income_self:"தொழிலில் இருந்து மாதம் எவ்வளவு வருமானம் (செலவுகளுக்குப் பிறகு)?",q_turnover:"உங்கள் தொழிலின் ஆண்டு விற்பனை (டர்ன்ஓவர்)?",
+q_jobtime:"இப்போதைய வேலையில் எவ்வளவு காலமாக இருக்கிறீர்கள்?",jobtime:["6 மாதத்திற்கும் குறைவு","6 முதல் 12 மாதம்","1 முதல் 2 ஆண்டு","2 ஆண்டுக்கு மேல்"],
+q_bizage:"உங்கள் தொழில் எவ்வளவு பழையது?",bizage:["1 ஆண்டுக்கும் குறைவு","1 முதல் 2 ஆண்டு","2 முதல் 3 ஆண்டு","3 முதல் 5 ஆண்டு","5 ஆண்டுக்கு மேல்"],
+q_itr:"நீங்கள் வருமான வரி ரிட்டர்ன் (ITR) தாக்கல் செய்கிறீர்களா?",itr:["ஆம், 2 ஆண்டு அல்லது அதற்கு மேல்","ஆம், 1 ஆண்டு","இல்லை"],
+q_salmode:"சம்பளம் எப்படி வருகிறது?",salmode:["வங்கிக் கணக்கில்","ரொக்கமாக (கேஷ்)"],
+q_emi:"இப்போது மாதம் எவ்வளவு EMI கட்டுகிறீர்கள்?",noEmi:"EMI எதுவும் இல்லை",
+q_cibil:"உங்கள் CIBIL ஸ்கோர்?",cibil:["750 அல்லது அதற்கு மேல்","700 – 749","650 – 699","650-க்கும் குறைவு","தெரியாது"],cibil_hint:"தெரியாதா? பரவாயில்லை. CIBIL இணையதளம் அல்லது ஆப்பில் இலவசமாகப் பார்க்கலாம்.",
+q_missed:"கடந்த 1 ஆண்டில் ஏதாவது EMI கட்டத் தவறினீர்களா?",missed:["இல்லை, ஒருபோதும் இல்லை","ஒரு முறை","ஒன்றுக்கு மேற்பட்ட முறை"],
+q_settled:"எப்போதாவது வங்கியுடன் செட்டில்மென்ட் செய்து, முழுப் பணம் கட்டாமல் லோனை முடித்திருக்கிறீர்களா?",yesno:["ஆம்","இல்லை"],
+q_propval:"சொத்தின் மதிப்பு எவ்வளவு?",q_proptype:"சொத்து எந்த வகை?",proptype:["வீடு / ஃப்ளாட்","கடை / அலுவலகம்"],q_propown:"சொத்து உங்கள் பெயரில் உள்ளதா?",
+q_amount:"உங்களுக்கு எவ்வளவு லோன் வேண்டும்?",
+contact_title:"கடைசி படி: உங்கள் பெயர் மற்றும் மொபைல் எண்",name:"உங்கள் பெயர்",phone:"மொபைல் எண்",
+notice:"உங்கள் பெயர், எண் மற்றும் பதில்களைச் சேமிக்கிறோம். உதவ, LoanCheckBLR ஆலோசகர் உங்களை ஒரு முறை அழைக்கலாம். நீங்கள் லோனுக்கு விண்ணப்பிக்க விரும்பினால் மட்டுமே உங்கள் விவரங்களை வங்கி அல்லது லோன் ஏஜென்டிடம் கொடுப்போம். ஸ்பேம் இல்லை. உங்கள் எண்ணை நாங்கள் ஒருபோதும் விற்பதில்லை.",
+nocall:"என்னை அழைக்க வேண்டாம், முடிவை மட்டும் காட்டுங்கள்",agree:"நான் படித்தேன், ஒப்புக்கொள்கிறேன்",privacy:"தனியுரிமைக் கொள்கை",showResult:"என் முடிவைக் காட்டு",
+err_name:"தயவுசெய்து உங்கள் பெயரை எழுதுங்கள்",err_phone:"தயவுசெய்து 10 இலக்க மொபைல் எண்ணை எழுதுங்கள்",err_agree:"தொடர 'ஒப்புக்கொள்கிறேன்' என்பதை டிக் செய்யுங்கள்",
+res_strong:"நல்ல செய்தி! இந்த லோன் கிடைக்க நல்ல வாய்ப்பு உள்ளது.",res_good:"இந்த லோன் கிடைக்க ஓரளவு வாய்ப்பு உள்ளது.",res_weak:"இப்போது இந்த லோன் கிடைப்பது கடினமாகத் தெரிகிறது.",res_none:"உங்கள் விவரங்கள் இப்போது வங்கிகளின் அடிப்படை விதிகளுக்குப் பொருந்தவில்லை.",
+upto:"உங்களுக்கு இவ்வளவு வரை லோன் கிடைக்கலாம்",emi_line:"EMI சுமார் மாதம் {emi}, {yrs} ஆண்டுகளுக்கு",lenders_line:"நாங்கள் பார்க்கும் {t} வங்கிகள்/நிதி நிறுவனங்களில் {m} நிறுவனங்களின் விதிகளுக்கு உங்கள் விவரம் பொருந்துகிறது.",tips_title:"வாய்ப்பை அதிகரிக்கும் வழிகள்",
+tip_cibil_low:"CIBIL ஸ்கோரை உயர்த்த 6 மாதம் ஒவ்வொரு EMI மற்றும் கிரெடிட் கார்டு பில்லையும் சரியான நேரத்தில் கட்டுங்கள்.",tip_cibil_unknown:"விண்ணப்பிக்கும் முன் உங்கள் CIBIL ஸ்கோரை இலவசமாகப் பாருங்கள்.",tip_emi_high:"உங்கள் வருமானத்துக்கு EMI அதிகமாக உள்ளது. குறைவான லோன் கேளுங்கள் அல்லது முதலில் ஒரு சிறிய லோனை முடியுங்கள்.",tip_missed:"இனி எந்த EMI-யையும் தவறவிடாதீர்கள். வங்கிகள் கடந்த 6-12 மாதங்களைப் பார்க்கும்.",tip_job_new:"பல வங்கிகள் இப்போதைய வேலையில் குறைந்தது 1 ஆண்டு இருக்க வேண்டும் என்று எதிர்பார்க்கின்றன.",tip_itr:"ஒவ்வொரு ஆண்டும் ITR தாக்கல் செய்யுங்கள். வங்கிகள் 2 ஆண்டு ITR கேட்கும்.",tip_bizage:"வங்கிகள் பொதுவாக 3 ஆண்டு பழைய தொழிலை எதிர்பார்க்கும். சில நிதி நிறுவனங்கள் 1 ஆண்டு தொழிலுக்கும் தரும்.",tip_settled:"செட்டில் செய்த லோன் உங்கள் பதிவில் இருக்கும். முழுப் பணம் கட்டி அதை 'க்ளோஸ்டு' ஆக மாற்றினால் உதவும்.",tip_amount:"உங்கள் வரம்பை விட அதிக லோன் கேட்டுள்ளீர்கள். சம்பாதிக்கும் குடும்ப உறுப்பினரைச் சேர்த்தால் உதவும்.",tip_cash:"சம்பளத்தை வங்கிக் கணக்கில் பெறுங்கள். வங்கிகளுக்கு சம்பளச் சான்று தேவை.",tip_lap_owner:"சொத்தின் உரிமையாளரும் இந்த லோனுக்குச் சேர்ந்து விண்ணப்பிக்க வேண்டும்.",
+call_yes:"எங்கள் ஆலோசகர் விரைவில் உங்களை அழைப்பார். ஸ்பேம் இல்லை, ஒரே ஒரு அழைப்பு.",call_no:"அழைக்க வேண்டாம் என்று சொன்னீர்கள். பிறகு உதவி தேவைப்பட்டால் மீண்டும் சரிபார்த்து அழைப்புக்கு அனுமதி கொடுங்கள்.",again:"மீண்டும் சரிபாருங்கள்",
+disclaimer:"இது வங்கிகளின் பொது விதிகளின் அடிப்படையிலான மதிப்பீடு மட்டுமே. இறுதி முடிவு எப்போதும் வங்கியுடையது. LoanCheckBLR ஒரு வங்கி அல்ல.",sending:"தயவுசெய்து காத்திருங்கள்…",
+m_upto:"{x} வரை",m_above:"{x}-க்கு மேல்",lakh:"லட்சம்",crore:"கோடி"},
+
+kn:{_name:"ಕನ್ನಡ",tagline:"ನಿಮಗೆ ಲೋನ್ ಸಿಗುತ್ತಾ? 1 ನಿಮಿಷದಲ್ಲಿ ತಿಳಿಯಿರಿ.",start:"ಈಗಲೇ ಚೆಕ್ ಮಾಡಿ",free:"ಸಂಪೂರ್ಣ ಉಚಿತ",noCibil:"ನಿಮ್ಮ CIBIL ಸ್ಕೋರ್ ಮೇಲೆ ಯಾವುದೇ ಪರಿಣಾಮವಿಲ್ಲ",oneMin:"ಕೇವಲ 1 ನಿಮಿಷ",langLabel:"ಭಾಷೆ",back:"ಹಿಂದೆ",step:"ಪ್ರಶ್ನೆ {n} / {t}",
+q_product:"ನಿಮಗೆ ಯಾವ ಲೋನ್ ಬೇಕು?",pl:"ಪರ್ಸನಲ್ ಲೋನ್",pl_d:"ಮದುವೆ, ಚಿಕಿತ್ಸೆ, ಪ್ರವಾಸ ಅಥವಾ ಯಾವುದೇ ಅಗತ್ಯಕ್ಕೆ",bl:"ಬಿಸಿನೆಸ್ ಲೋನ್",bl_d:"ನಿಮ್ಮ ಅಂಗಡಿ ಅಥವಾ ವ್ಯಾಪಾರಕ್ಕೆ",hl:"ಹೋಮ್ ಲೋನ್",hl_d:"ಮನೆ ಖರೀದಿಸಲು ಅಥವಾ ಕಟ್ಟಲು",lap:"ಆಸ್ತಿ ಮೇಲೆ ಲೋನ್",lap_d:"ನಿಮ್ಮ ಮನೆ ಅಥವಾ ಅಂಗಡಿಯನ್ನು ಅಡಮಾನ ಇಟ್ಟು ಲೋನ್",
+q_emp:"ನೀವು ಹೇಗೆ ಸಂಪಾದಿಸುತ್ತೀರಿ?",sal:"ಉದ್ಯೋಗ, ತಿಂಗಳ ಸಂಬಳ",self:"ಸ್ವಂತ ವ್ಯಾಪಾರ / ಅಂಗಡಿ",q_age:"ನಿಮ್ಮ ವಯಸ್ಸು?",years:"{x} ವರ್ಷ",
+q_income_sal:"ತಿಂಗಳಿಗೆ ಕೈಗೆ ಎಷ್ಟು ಸಂಬಳ ಬರುತ್ತದೆ?",q_income_self:"ವ್ಯಾಪಾರದಿಂದ ತಿಂಗಳಿಗೆ ಎಷ್ಟು ಆದಾಯ (ಖರ್ಚಿನ ನಂತರ)?",q_turnover:"ನಿಮ್ಮ ವ್ಯಾಪಾರದ ವರ್ಷದ ಒಟ್ಟು ಮಾರಾಟ (ಟರ್ನ್‌ಓವರ್)?",
+q_jobtime:"ಈಗಿನ ಉದ್ಯೋಗದಲ್ಲಿ ಎಷ್ಟು ಸಮಯದಿಂದ ಇದ್ದೀರಿ?",jobtime:["6 ತಿಂಗಳಿಗಿಂತ ಕಡಿಮೆ","6 ರಿಂದ 12 ತಿಂಗಳು","1 ರಿಂದ 2 ವರ್ಷ","2 ವರ್ಷಕ್ಕಿಂತ ಹೆಚ್ಚು"],
+q_bizage:"ನಿಮ್ಮ ವ್ಯಾಪಾರ ಎಷ್ಟು ಹಳೆಯದು?",bizage:["1 ವರ್ಷಕ್ಕಿಂತ ಕಡಿಮೆ","1 ರಿಂದ 2 ವರ್ಷ","2 ರಿಂದ 3 ವರ್ಷ","3 ರಿಂದ 5 ವರ್ಷ","5 ವರ್ಷಕ್ಕಿಂತ ಹೆಚ್ಚು"],
+q_itr:"ನೀವು ಆದಾಯ ತೆರಿಗೆ ರಿಟರ್ನ್ (ITR) ಸಲ್ಲಿಸುತ್ತೀರಾ?",itr:["ಹೌದು, 2 ವರ್ಷ ಅಥವಾ ಹೆಚ್ಚು","ಹೌದು, 1 ವರ್ಷ","ಇಲ್ಲ"],
+q_salmode:"ಸಂಬಳ ಹೇಗೆ ಬರುತ್ತದೆ?",salmode:["ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ","ನಗದು (ಕ್ಯಾಶ್)"],
+q_emi:"ಈಗ ತಿಂಗಳಿಗೆ ಎಷ್ಟು EMI ಕಟ್ಟುತ್ತೀರಿ?",noEmi:"ಯಾವುದೇ EMI ಇಲ್ಲ",
+q_cibil:"ನಿಮ್ಮ CIBIL ಸ್ಕೋರ್?",cibil:["750 ಅಥವಾ ಹೆಚ್ಚು","700 – 749","650 – 699","650 ಕ್ಕಿಂತ ಕಡಿಮೆ","ಗೊತ್ತಿಲ್ಲ"],cibil_hint:"ಗೊತ್ತಿಲ್ಲವೇ? ಪರವಾಗಿಲ್ಲ. CIBIL ವೆಬ್‌ಸೈಟ್ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಉಚಿತವಾಗಿ ನೋಡಬಹುದು.",
+q_missed:"ಕಳೆದ 1 ವರ್ಷದಲ್ಲಿ ಯಾವುದಾದರೂ EMI ತಪ್ಪಿಸಿದ್ದೀರಾ?",missed:["ಇಲ್ಲ, ಎಂದೂ ಇಲ್ಲ","ಒಮ್ಮೆ","ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚು ಬಾರಿ"],
+q_settled:"ಎಂದಾದರೂ ಬ್ಯಾಂಕ್ ಜೊತೆ ಸೆಟಲ್‌ಮೆಂಟ್ ಮಾಡಿ, ಪೂರ್ತಿ ಹಣ ಕಟ್ಟದೆ ಲೋನ್ ಮುಗಿಸಿದ್ದೀರಾ?",yesno:["ಹೌದು","ಇಲ್ಲ"],
+q_propval:"ಆಸ್ತಿಯ ಬೆಲೆ ಎಷ್ಟು?",q_proptype:"ಆಸ್ತಿ ಯಾವ ರೀತಿಯದು?",proptype:["ಮನೆ / ಫ್ಲಾಟ್","ಅಂಗಡಿ / ಆಫೀಸ್"],q_propown:"ಆಸ್ತಿ ನಿಮ್ಮ ಹೆಸರಿನಲ್ಲಿದೆಯೇ?",
+q_amount:"ನಿಮಗೆ ಎಷ್ಟು ಲೋನ್ ಬೇಕು?",
+contact_title:"ಕೊನೆಯ ಹಂತ: ನಿಮ್ಮ ಹೆಸರು ಮತ್ತು ಮೊಬೈಲ್ ನಂಬರ್",name:"ನಿಮ್ಮ ಹೆಸರು",phone:"ಮೊಬೈಲ್ ನಂಬರ್",
+notice:"ನಾವು ನಿಮ್ಮ ಹೆಸರು, ನಂಬರ್ ಮತ್ತು ಉತ್ತರಗಳನ್ನು ಸೇವ್ ಮಾಡುತ್ತೇವೆ. ಸಹಾಯಕ್ಕಾಗಿ LoanCheckBLR ಸಲಹೆಗಾರರು ನಿಮಗೆ ಒಮ್ಮೆ ಕರೆ ಮಾಡಬಹುದು. ನೀವು ಲೋನ್‌ಗೆ ಅರ್ಜಿ ಹಾಕಲು ಬಯಸಿದರೆ ಮಾತ್ರ ನಿಮ್ಮ ವಿವರಗಳನ್ನು ಬ್ಯಾಂಕ್ ಅಥವಾ ಲೋನ್ ಏಜೆಂಟ್‌ಗೆ ನೀಡುತ್ತೇವೆ. ಸ್ಪ್ಯಾಮ್ ಇಲ್ಲ. ನಿಮ್ಮ ನಂಬರ್ ಅನ್ನು ನಾವು ಎಂದಿಗೂ ಮಾರುವುದಿಲ್ಲ.",
+nocall:"ನನಗೆ ಕರೆ ಮಾಡಬೇಡಿ, ಫಲಿತಾಂಶ ಮಾತ್ರ ತೋರಿಸಿ",agree:"ನಾನು ಓದಿದ್ದೇನೆ ಮತ್ತು ಒಪ್ಪುತ್ತೇನೆ",privacy:"ಗೌಪ್ಯತಾ ನೀತಿ",showResult:"ನನ್ನ ಫಲಿತಾಂಶ ತೋರಿಸಿ",
+err_name:"ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹೆಸರು ಬರೆಯಿರಿ",err_phone:"ದಯವಿಟ್ಟು 10 ಅಂಕಿಯ ಮೊಬೈಲ್ ನಂಬರ್ ಬರೆಯಿರಿ",err_agree:"ಮುಂದುವರಿಯಲು 'ಒಪ್ಪುತ್ತೇನೆ' ಟಿಕ್ ಮಾಡಿ",
+res_strong:"ಒಳ್ಳೆಯ ಸುದ್ದಿ! ಈ ಲೋನ್ ಸಿಗುವ ಸಾಧ್ಯತೆ ಚೆನ್ನಾಗಿದೆ.",res_good:"ಈ ಲೋನ್ ಸಿಗುವ ಸಾಧ್ಯತೆ ಸಾಧಾರಣವಾಗಿದೆ.",res_weak:"ಈಗ ಈ ಲೋನ್ ಸಿಗುವುದು ಕಷ್ಟ ಎನಿಸುತ್ತಿದೆ.",res_none:"ನಿಮ್ಮ ವಿವರಗಳು ಈಗ ಬ್ಯಾಂಕ್‌ಗಳ ಮೂಲ ನಿಯಮಗಳಿಗೆ ಹೊಂದುತ್ತಿಲ್ಲ.",
+upto:"ನಿಮಗೆ ಇಷ್ಟರವರೆಗೆ ಲೋನ್ ಸಿಗಬಹುದು",emi_line:"EMI ಸುಮಾರು ತಿಂಗಳಿಗೆ {emi}, {yrs} ವರ್ಷಗಳಿಗೆ",lenders_line:"ನಾವು ನೋಡುವ {t} ಬ್ಯಾಂಕ್/ಫೈನಾನ್ಸ್ ಕಂಪನಿಗಳಲ್ಲಿ {m} ನಿಯಮಗಳಿಗೆ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಹೊಂದುತ್ತದೆ.",tips_title:"ಸಾಧ್ಯತೆ ಹೆಚ್ಚಿಸುವ ದಾರಿಗಳು",
+tip_cibil_low:"CIBIL ಸ್ಕೋರ್ ಹೆಚ್ಚಿಸಲು 6 ತಿಂಗಳು ಪ್ರತಿ EMI ಮತ್ತು ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಬಿಲ್ ಸಮಯಕ್ಕೆ ಕಟ್ಟಿ.",tip_cibil_unknown:"ಅರ್ಜಿ ಹಾಕುವ ಮೊದಲು ನಿಮ್ಮ CIBIL ಸ್ಕೋರ್ ಉಚಿತವಾಗಿ ನೋಡಿ.",tip_emi_high:"ನಿಮ್ಮ ಆದಾಯಕ್ಕೆ EMI ಹೆಚ್ಚಾಗಿದೆ. ಕಡಿಮೆ ಲೋನ್ ಕೇಳಿ ಅಥವಾ ಮೊದಲು ಒಂದು ಸಣ್ಣ ಲೋನ್ ಮುಗಿಸಿ.",tip_missed:"ಇನ್ನು ಯಾವುದೇ EMI ತಪ್ಪಿಸಬೇಡಿ. ಬ್ಯಾಂಕ್‌ಗಳು ಕಳೆದ 6-12 ತಿಂಗಳು ನೋಡುತ್ತವೆ.",tip_job_new:"ಹಲವು ಬ್ಯಾಂಕ್‌ಗಳು ಈಗಿನ ಉದ್ಯೋಗದಲ್ಲಿ ಕನಿಷ್ಠ 1 ವರ್ಷ ಇರಬೇಕು ಎನ್ನುತ್ತವೆ.",tip_itr:"ಪ್ರತಿ ವರ್ಷ ITR ಸಲ್ಲಿಸಿ. ಬ್ಯಾಂಕ್‌ಗಳು 2 ವರ್ಷದ ITR ಕೇಳುತ್ತವೆ.",tip_bizage:"ಬ್ಯಾಂಕ್‌ಗಳು ಸಾಮಾನ್ಯವಾಗಿ 3 ವರ್ಷ ಹಳೆಯ ವ್ಯಾಪಾರ ಕೇಳುತ್ತವೆ. ಕೆಲವು ಫೈನಾನ್ಸ್ ಕಂಪನಿಗಳು 1 ವರ್ಷದ ವ್ಯಾಪಾರಕ್ಕೂ ಕೊಡುತ್ತವೆ.",tip_settled:"ಸೆಟಲ್ ಮಾಡಿದ ಲೋನ್ ನಿಮ್ಮ ದಾಖಲೆಯಲ್ಲಿ ಉಳಿಯುತ್ತದೆ. ಪೂರ್ತಿ ಹಣ ಕಟ್ಟಿ ಅದನ್ನು 'ಕ್ಲೋಸ್ಡ್' ಮಾಡಿಸಿದರೆ ಸಹಾಯವಾಗುತ್ತದೆ.",tip_amount:"ನಿಮ್ಮ ಮಿತಿಗಿಂತ ಹೆಚ್ಚು ಲೋನ್ ಕೇಳಿದ್ದೀರಿ. ಸಂಪಾದಿಸುವ ಕುಟುಂಬದ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿದರೆ ಸಹಾಯವಾಗಬಹುದು.",tip_cash:"ಸಂಬಳವನ್ನು ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಪಡೆಯಿರಿ. ಬ್ಯಾಂಕ್‌ಗಳಿಗೆ ಸಂಬಳದ ಪುರಾವೆ ಬೇಕು.",tip_lap_owner:"ಆಸ್ತಿಯ ಮಾಲೀಕರೂ ಈ ಲೋನ್‌ಗೆ ಜೊತೆಯಾಗಿ ಅರ್ಜಿ ಹಾಕಬೇಕು.",
+call_yes:"ನಮ್ಮ ಸಲಹೆಗಾರರು ಶೀಘ್ರದಲ್ಲೇ ನಿಮಗೆ ಕರೆ ಮಾಡುತ್ತಾರೆ. ಸ್ಪ್ಯಾಮ್ ಇಲ್ಲ, ಒಂದೇ ಕರೆ.",call_no:"ನೀವು ಕರೆ ಬೇಡ ಎಂದಿದ್ದೀರಿ. ನಂತರ ಸಹಾಯ ಬೇಕಾದರೆ ಮತ್ತೆ ಚೆಕ್ ಮಾಡಿ ಕರೆಗೆ ಅನುಮತಿ ನೀಡಿ.",again:"ಮತ್ತೆ ಚೆಕ್ ಮಾಡಿ",
+disclaimer:"ಇದು ಬ್ಯಾಂಕ್‌ಗಳ ಸಾರ್ವಜನಿಕ ನಿಯಮಗಳ ಆಧಾರದ ಅಂದಾಜು ಮಾತ್ರ. ಅಂತಿಮ ನಿರ್ಧಾರ ಯಾವಾಗಲೂ ಬ್ಯಾಂಕ್‌ನದು. LoanCheckBLR ಬ್ಯಾಂಕ್ ಅಲ್ಲ.",sending:"ದಯವಿಟ್ಟು ಕಾಯಿರಿ…",
+m_upto:"{x} ವರೆಗೆ",m_above:"{x} ಕ್ಕಿಂತ ಹೆಚ್ಚು",lakh:"ಲಕ್ಷ",crore:"ಕೋಟಿ"}
+};
+</script>
+<script>
+/* ===== settings: paste your Google Apps Script web-app URL here ===== */
+const LEAD_URL = "https://script.google.com/macros/s/AKfycbyNNCTZwn51vEz7cGDy9rEu8qN2dvJB5q7NStXeen8HHryCQ4K40ZbRjzFj1DGeN8KC/exec";
+
+/* ===== language ===== */
+const LANGS = ["en","hi","bn","mr","te","ta","kn"];
+let lang = "en";
+try{ const s = localStorage.getItem("lc_lang"); if(LANGS.includes(s)) lang = s; else { const n=(navigator.language||"").slice(0,2); if(LANGS.includes(n)) lang = n; } }catch(e){}
+const T = k => (I18N[lang][k] ?? I18N.en[k]);
+const fill = (s,o) => s.replace(/\{(\w+)\}/g,(_,k)=>o[k]);
+function money(n){
+  if(n>=1e7) return "₹"+(+(n/1e7).toFixed(2))+" "+T("crore");
+  if(n>=1e5) return "₹"+(+(n/1e5).toFixed(2))+" "+T("lakh");
+  return "₹"+Math.round(n).toLocaleString("en-IN");
+}
+function rangeLabel([a,b]){
+  if(a==null) return fill(T("m_upto"),{x:money(b)});
+  if(b==null) return fill(T("m_above"),{x:money(a)});
+  return money(a)+" – "+money(b);
+}
+
+/* ===== answer options (label source, value) ===== */
+const R = {
+  income:[[null,15000,12000],[15000,25000,20000],[25000,40000,32000],[40000,60000,50000],[60000,100000,80000],[100000,200000,150000],[200000,null,250000]],
+  turnover:[[null,1000000,500000],[1000000,2500000,1700000],[2500000,5000000,3700000],[5000000,10000000,7500000],[10000000,null,15000000]],
+  emi:[[null,5000,3000],[5000,15000,10000],[15000,30000,22000],[30000,null,40000]],
+  prop:[[null,2500000,2000000],[2500000,5000000,3700000],[5000000,10000000,7500000],[10000000,20000000,15000000],[20000000,null,25000000]],
+  amount:{
+    pl:[[null,100000,100000],[100000,300000,200000],[300000,500000,400000],[500000,1000000,750000],[1000000,null,1500000]],
+    bl:[[null,500000,300000],[500000,1000000,750000],[1000000,2500000,1700000],[2500000,5000000,3700000],[5000000,null,6000000]],
+    hl:[[null,2500000,2000000],[2500000,5000000,3700000],[5000000,10000000,7500000],[10000000,null,12000000]],
+    lap:[[null,1000000,700000],[1000000,2500000,1700000],[2500000,5000000,3700000],[5000000,null,7000000]]
+  }
+};
+const AGES = [["18–25",22],["26–35",30],["36–45",40],["46–55",50],["56–65",60],["65+",68]];
+
+/* ===== questions: each returns {key, title, options:[{label,sub,icon,value}]} ===== */
+const ans = {};
+function questions(){
+  const q = [];
+  q.push({key:"product",title:T("q_product"),opts:[
+    {icon:"👤",label:T("pl"),sub:T("pl_d"),value:"pl"},
+    {icon:"🏪",label:T("bl"),sub:T("bl_d"),value:"bl"},
+    {icon:"🏠",label:T("hl"),sub:T("hl_d"),value:"hl"},
+    {icon:"📄",label:T("lap"),sub:T("lap_d"),value:"lap"}]});
+  if(ans.product!=="bl") q.push({key:"emp",title:T("q_emp"),opts:[{icon:"💼",label:T("sal"),value:"sal"},{icon:"🏪",label:T("self"),value:"self"}]});
+  const emp = ans.product==="bl" ? "self" : ans.emp;
+  q.push({key:"age",title:T("q_age"),opts:AGES.map(([l,v])=>({label:fill(T("years"),{x:l}),value:v}))});
+  q.push({key:"income",title:emp==="self"?T("q_income_self"):T("q_income_sal"),opts:R.income.map(r=>({label:rangeLabel(r),value:r[2]}))});
+  if(emp==="self"){
+    if(ans.product==="bl") q.push({key:"turnover",title:T("q_turnover"),opts:R.turnover.map(r=>({label:rangeLabel(r),value:r[2]}))});
+    q.push({key:"bizage",title:T("q_bizage"),opts:T("bizage").map((l,i)=>({label:l,value:[0.5,1.5,2.5,4,6][i]}))});
+    q.push({key:"itr",title:T("q_itr"),opts:T("itr").map((l,i)=>({label:l,value:[2,1,0][i]}))});
+  } else {
+    q.push({key:"jobtime",title:T("q_jobtime"),opts:T("jobtime").map((l,i)=>({label:l,value:[3,9,18,36][i]}))});
+    q.push({key:"salmode",title:T("q_salmode"),opts:[{icon:"🏦",label:T("salmode")[0],value:"bank"},{icon:"💵",label:T("salmode")[1],value:"cash"}]});
+  }
+  q.push({key:"emi",title:T("q_emi"),opts:[{label:T("noEmi"),value:0}].concat(R.emi.map(r=>({label:rangeLabel(r),value:r[2]})))});
+  q.push({key:"cibil",title:T("q_cibil"),hint:T("cibil_hint"),opts:T("cibil").map((l,i)=>({label:l,value:["750","700","650","low","unknown"][i]}))});
+  q.push({key:"missed",title:T("q_missed"),opts:T("missed").map((l,i)=>({label:l,value:i}))});
+  q.push({key:"settled",title:T("q_settled"),opts:[{label:T("yesno")[1],value:"no"},{label:T("yesno")[0],value:"yes"}]});
+  if(ans.product==="hl"||ans.product==="lap") q.push({key:"propValue",title:T("q_propval"),opts:R.prop.map(r=>({label:rangeLabel(r),value:r[2]}))});
+  if(ans.product==="lap"){
+    q.push({key:"propType",title:T("q_proptype"),opts:[{icon:"🏠",label:T("proptype")[0],value:"res"},{icon:"🏬",label:T("proptype")[1],value:"com"}]});
+    q.push({key:"ownName",title:T("q_propown"),opts:[{label:T("yesno")[0],value:"yes"},{label:T("yesno")[1],value:"no"}]});
+  }
+  q.push({key:"amount",title:T("q_amount"),opts:(R.amount[ans.product]||R.amount.pl).map(r=>({label:rangeLabel(r),value:r[2]}))});
+  q.push({key:"_contact"});
+  return q;
+}
+
+/* ===== engine input ===== */
+function profile(){
+  const emp = ans.product==="bl" ? "self" : ans.emp;
+  const p = {product:ans.product, emp, age:ans.age, emi:ans.emi||0, city:"Bengaluru",
+    income: emp==="sal" ? ans.income : 0, salBank: ans.salmode==="cash"?"cash":"other", employer:"pvt",
+    expCur: ans.jobtime||0, expTotal:(ans.jobtime||0)/12,
+    profit: emp==="self" ? ans.income*12 : 0, turnover: ans.turnover||0, vintage: ans.bizage||0, itrYears: ans.itr ?? 0, gst:"yes",
+    propValue: ans.propValue||0, propType: ans.propType||"res", ownName: ans.ownName||"yes",
+    cibil: ans.cibil, bounces: ans.missed||0, settled: ans.settled||"no", amount: ans.amount};
+  return p;
+}
+function tipKeys(p,r){
+  const t = [];
+  const ratio = r.inc>0 ? ((p.emi||0)+r.askEmi)/r.inc : 9;
+  if(p.cibil==="low") t.push("tip_cibil_low");
+  if(p.cibil==="unknown") t.push("tip_cibil_unknown");
+  if(ratio>0.6) t.push("tip_emi_high");
+  if(p.bounces>0) t.push("tip_missed");
+  if(p.settled==="yes") t.push("tip_settled");
+  if(p.emp==="sal" && p.salBank==="cash") t.push("tip_cash");
+  if(p.emp==="sal" && p.expCur<12) t.push("tip_job_new");
+  if(p.emp==="self" && p.itrYears<2) t.push("tip_itr");
+  if(p.emp==="self" && p.vintage<3) t.push("tip_bizage");
+  if(p.product==="lap" && p.ownName==="no") t.push("tip_lap_owner");
+  if(p.amount>r.max && r.max>0) t.push("tip_amount");
+  return t.slice(0,4);
+}
+
+/* ===== rendering ===== */
+let step = 0, contact = {name:"",phone:"",nocall:false,agree:false}, result = null;
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+
+function setLang(l){
+  lang = l; try{ localStorage.setItem("lc_lang", l); }catch(e){}
+  document.documentElement.lang = l;
+  document.getElementById("langLabel").textContent = T("langLabel");
+  document.getElementById("privLink").textContent = T("privacy");
+  document.getElementById("foot").textContent = T("disclaimer");
+  render();
+}
+function render(){
+  if(result) return renderResult();
+  if(step<0) return renderStart();
+  const qs = questions();
+  if(step>=qs.length) step = qs.length-1;
+  const q = qs[step];
+  const prog = `<div class="prog"><div class="bar"><i style="width:${Math.round((step+1)*100/qs.length)}%"></i></div><div class="lbl">${fill(T("step"),{n:step+1,t:qs.length})}</div></div>`;
+  const back = `<button class="backbtn" id="backBtn" type="button">← ${T("back")}</button>`;
+  if(q.key==="_contact") return renderContact(prog, back);
+  app.innerHTML = `${back}${prog}<h2 id="qt">${esc(q.title)}</h2>${q.hint?`<p class="hint">${esc(q.hint)}</p>`:""}
+    <div class="opts" role="group" aria-labelledby="qt">${q.opts.map((o,i)=>`<button type="button" class="opt${ans[q.key]===o.value?" sel":""}" data-i="${i}">${o.icon?`<span class="ic" aria-hidden="true">${o.icon}</span>`:""}<span>${esc(o.label)}${o.sub?`<small>${esc(o.sub)}</small>`:""}</span></button>`).join("")}</div>`;
+  app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+    const o = q.opts[+b.dataset.i];
+    ans[q.key] = o.value;
+    if(q.key==="product"){ delete ans.amount; if(o.value==="bl") ans.emp="self"; }
+    step++; render(); app.scrollIntoView({block:"start"});
+  }));
+  document.getElementById("backBtn").addEventListener("click",()=>{ step--; render(); });
+  const first = app.querySelector(".opt.sel") || app.querySelector(".opt"); if(first && step>0) first.focus({preventScroll:true});
+}
+function renderStart(){
+  app.innerHTML = `<h1>${esc(T("tagline"))}</h1>
+    <ul class="trust"><li><span>✓</span>${esc(T("free"))}</li><li><span>✓</span>${esc(T("noCibil"))}</li><li><span>✓</span>${esc(T("oneMin"))}</li></ul>
+    <button type="button" class="big" id="startBtn">${esc(T("start"))} →</button>`;
+  document.getElementById("startBtn").addEventListener("click",()=>{ step=0; render(); });
+}
+function renderContact(prog, back){
+  app.innerHTML = `${back}${prog}<h2>${esc(T("contact_title"))}</h2>
+    <form id="cf" novalidate style="display:grid;gap:14px">
+      <label class="f" for="cName">${esc(T("name"))}<input type="text" id="cName" autocomplete="name" value="${esc(contact.name)}" maxlength="60"></label>
+      <label class="f" for="cPhone">${esc(T("phone"))}<input type="tel" id="cPhone" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="98XXXXXXXX" value="${esc(contact.phone)}"></label>
+      <div class="hp" aria-hidden="true"><label for="website">Website</label><input type="text" id="website" tabindex="-1" autocomplete="off"></div>
+      <p class="notice">${esc(T("notice"))} <a href="privacy.html" target="_blank" rel="noopener">${esc(T("privacy"))}</a></p>
+      <label class="check" for="cNocall"><input type="checkbox" id="cNocall" ${contact.nocall?"checked":""}><span>${esc(T("nocall"))}</span></label>
+      <label class="check" for="cAgree"><input type="checkbox" id="cAgree" ${contact.agree?"checked":""}><span><strong>${esc(T("agree"))}</strong></span></label>
+      <p class="err" id="cErr" role="alert"></p>
+      <button type="submit" class="big" id="goBtn">${esc(T("showResult"))} →</button>
+    </form>`;
+  const ph = document.getElementById("cPhone");
+  ph.addEventListener("input",()=>{ ph.value = ph.value.replace(/\D/g,"").slice(0,10); });
+  document.getElementById("backBtn").addEventListener("click",()=>{ saveContact(); step--; render(); });
+  document.getElementById("cf").addEventListener("submit", submit);
+}
+function saveContact(){
+  contact.name = document.getElementById("cName").value.trim();
+  contact.phone = document.getElementById("cPhone").value.trim();
+  contact.nocall = document.getElementById("cNocall").checked;
+  contact.agree = document.getElementById("cAgree").checked;
+}
+async function submit(e){
+  e.preventDefault(); saveContact();
+  const err = document.getElementById("cErr");
+  if(contact.name.length<2){ err.textContent=T("err_name"); document.getElementById("cName").focus(); return; }
+  if(!/^[6-9]\d{9}$/.test(contact.phone)){ err.textContent=T("err_phone"); document.getElementById("cPhone").focus(); return; }
+  if(!contact.agree){ err.textContent=T("err_agree"); return; }
+  err.textContent = "";
+  const btn = document.getElementById("goBtn"); btn.disabled = true; btn.textContent = T("sending");
+  const p = profile(); const r = evaluate(p);
+  if(!document.getElementById("website").value) await sendLead(p, r);
+  result = {p, r}; render(); window.scrollTo(0,0);
+}
+async function sendLead(p, r){
+  if(!LEAD_URL) return;
+  const rec = {name:contact.name, phone:contact.phone, callOk: contact.nocall?"No":"Yes", lang,
+    product:p.product, emp:p.emp, age:p.age, income:Math.round(r.inc), turnover:p.turnover||"", emi:p.emi, cibil:p.cibil,
+    missed:p.bounces, settled:p.settled, propValue:p.propValue||"", propType:(p.product==="lap"?p.propType:""), ownName:(p.product==="lap"?p.ownName:""),
+    amount:p.amount, score:r.score, tier:r.tier, maxEstimate:r.max,
+    login1:r.login[0]?r.login[0].name:"", login2:r.login[1]?r.login[1].name:"", matches:r.matches.map(m=>m.L.name).join(", "),
+    consent:"Agreed to notice v1: save details, one advisor call"+(contact.nocall?" declined":"")+", share with bank/agent only if customer wants to apply"};
+  try{
+    const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 5000);
+    await fetch(LEAD_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec),signal:ctl.signal});
+    clearTimeout(t);
+  }catch(e){ /* the result is still shown */ }
+}
+function renderResult(){
+  const {p,r} = result;
+  const cls = r.band==="Strong"?"strong": r.band==="Good"?"good":"weak";
+  const icon = cls==="strong"?"✓": cls==="good"?"!":"✕";
+  const head = !r.matches.length ? T("res_none") : cls==="strong"?T("res_strong"): cls==="good"?T("res_good"):T("res_weak");
+  const tips = tipKeys(p,r);
+  const emiAtMax = emiFor(Math.min(p.amount, r.max||p.amount), r.rate, r.years);
+  app.innerHTML = `<div class="verdict"><div class="badge ${cls}" aria-hidden="true">${icon}</div><h2>${esc(head)}</h2></div>
+    ${r.max>0?`<div class="amt"><div class="k">${esc(T("upto"))}</div><div class="v">${money(r.max)}</div>
+      <div class="s">${esc(fill(T("emi_line"),{emi:money(emiAtMax),yrs:r.years}))}</div></div>`:""}
+    <p class="hint">${esc(fill(T("lenders_line"),{m:r.matches.length,t:r.results.length}))}</p>
+    ${tips.length?`<div class="tips"><h3>${esc(T("tips_title"))}</h3><ul>${tips.map(k=>`<li>${esc(T(k))}</li>`).join("")}</ul></div>`:""}
+    <div class="callnote">${esc(contact.nocall?T("call_no"):T("call_yes"))}</div>
+    <button type="button" class="big" id="againBtn">${esc(T("again"))}</button>`;
+  document.getElementById("againBtn").addEventListener("click",()=>{ result=null; Object.keys(ans).forEach(k=>delete ans[k]); step=0; render(); });
+}
+
+/* ===== boot ===== */
+const sel = document.getElementById("langSel");
+sel.innerHTML = LANGS.map(l=>`<option value="${l}">${I18N[l]._name}</option>`).join("");
+sel.value = lang;
+sel.addEventListener("change",()=>setLang(sel.value));
+document.getElementById("home").addEventListener("click",e=>{ e.preventDefault(); result=null; step=-1; render(); });
+if(LEAD_URL){ document.getElementById("adminLink").href = LEAD_URL; document.getElementById("adminWrap").classList.remove("hide"); }
+step = -1;
+setLang(lang);
+</script>
+</body>
+</html>

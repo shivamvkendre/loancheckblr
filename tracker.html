@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoanCheckBLR Lead Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a bank-passbook ledger. Questions on the left, a live "passbook slip" on the right
+   that gets a violet rubber-stamp verdict, like the ink stamps on Indian bank counters. */
+:root{
+  --paper:#f2f3f7;
+  --card:#ffffff;
+  --ink:#18213a;
+  --muted:#5b6278;
+  --line:#dadde8;
+  --stamp:#4b2fb2;
+  --stamp-soft:#ece8fb;
+  --good:#1d7a4c;
+  --warn:#9a5b00;
+  --bad:#b3261e;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-num:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1120; --card:#161a2c; --ink:#e7e9f2; --muted:#9ba2ba; --line:#2a3049;
+    --stamp:#a898ff; --stamp-soft:#231f45; --good:#5fd39a; --warn:#f0b44c; --bad:#ff8a80;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1120; --card:#161a2c; --ink:#e7e9f2; --muted:#9ba2ba; --line:#2a3049;
+  --stamp:#a898ff; --stamp-soft:#231f45; --good:#5fd39a; --warn:#f0b44c; --bad:#ff8a80;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5}
+a{color:var(--stamp)}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 64px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+header.top h1{font-size:clamp(30px,6vw,46px);font-weight:800;line-height:1}
+header.top p{margin:6px 0 0;color:var(--muted);max-width:52ch}
+nav.tabs{display:flex;gap:6px}
+nav.tabs a{font-weight:600;font-size:14px;text-decoration:none;color:var(--ink);padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;margin-top:22px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.example{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;background:var(--stamp-soft);border:1px dashed var(--stamp);border-radius:var(--r);padding:10px 12px;margin-bottom:14px}
+.example button{margin-left:auto}
+form{display:grid;gap:14px}
+fieldset{border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:16px;margin:0;display:grid;gap:14px;min-width:0}
+legend{font-family:var(--font-display);font-weight:700;font-size:18px;padding:0 6px;display:flex;gap:8px;align-items:baseline}
+legend .step{font-family:var(--font-num);font-size:12px;color:var(--stamp);border:1px solid var(--stamp);border-radius:4px;padding:1px 5px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}
+.minibar{display:none}
+@media (max-width:900px){
+  .minibar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;gap:10px;align-items:center;justify-content:space-between;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--ink);color:var(--paper);font-size:14px}
+  .minibar strong{font-family:var(--font-display);font-size:16px}
+  .minibar a{color:var(--paper);font-weight:600}
+  .wrap{padding-bottom:90px}
+}
+label.f{display:grid;gap:5px;font-size:14px;font-weight:600}
+label.f small{font-weight:400;color:var(--muted)}
+input[type=number],input[type=text],input[type=tel],select{font:inherit;font-weight:400;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.seg input:focus-visible+span{outline:3px solid var(--stamp);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:inline-block;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:14px;font-weight:500;cursor:pointer}
+.seg input:checked+span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.qtitle{font-size:14px;font-weight:600;margin-bottom:6px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.hide{display:none!important}
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:8px;border:1px solid var(--ink);background:var(--card);color:var(--ink);padding:9px 14px}
+button.primary{background:var(--stamp);border-color:var(--stamp);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+/* Passbook slip */
+aside.slip{position:sticky;top:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+@media (max-width:900px){aside.slip{position:static}}
+.slip-head{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px dashed var(--line);font-family:var(--font-num);font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.slip-body{padding:18px 16px;display:grid;gap:16px;background-image:repeating-linear-gradient(to bottom,transparent 0 31px,var(--line) 31px 32px);background-position:0 8px}
+.stamp-zone{display:flex;justify-content:center;padding:6px 0 2px}
+.stamp{font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:.08em;text-transform:uppercase;color:var(--stamp);border:3px solid var(--stamp);outline:1px solid var(--stamp);outline-offset:3px;border-radius:8px;padding:6px 16px;transform:rotate(-5deg);background:var(--card);opacity:.92}
+.stamp.bad{color:var(--bad);border-color:var(--bad);outline-color:var(--bad)}
+.stamp.thunk{animation:thunk .35s ease-out}
+@keyframes thunk{0%{transform:rotate(-5deg) scale(1.35);opacity:0}100%{transform:rotate(-5deg) scale(1);opacity:.92}}
+@media (prefers-reduced-motion:reduce){.stamp.thunk{animation:none}}
+.verdict{text-align:center;font-size:15px;margin:0;background:var(--card)}
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fig{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px}
+.fig .k{font-size:12px;color:var(--muted)}
+.fig .v{font-family:var(--font-num);font-weight:600;font-size:20px;font-variant-numeric:tabular-nums}
+.meter{background:var(--card)}
+.meter .bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden}
+.meter .bar i{display:block;height:100%;background:var(--stamp);width:0;transition:width .3s}
+.meter .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px;background:var(--card)}
+.checks li{display:flex;gap:8px;font-size:14px;align-items:flex-start}
+.dot{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;margin-top:2px}
+.dot.ok{background:var(--good)} .dot.mid{background:var(--warn)} .dot.no{background:var(--bad)}
+.tips{background:var(--card);border-left:3px solid var(--stamp);padding:8px 10px;font-size:14px}
+.tips ul{margin:4px 0 0;padding-left:18px}
+.contact{border-top:1px dashed var(--line);padding:16px;display:grid;gap:10px}
+.contact h3{font-size:18px}
+.consent{display:flex;gap:8px;font-size:13px;color:var(--muted);align-items:flex-start}
+.consent input{margin-top:3px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.status{font-size:13px;margin:0}
+.status.ok{color:var(--good)} .status.err{color:var(--bad)}
+footer{margin-top:28px;font-size:13px;color:var(--muted);max-width:75ch}
+/* Partner view */
+.pv{display:grid;gap:22px;margin-top:22px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;min-width:0}
+.panel h2{font-size:22px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+td.n{font-family:var(--font-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+.pill.hot{color:var(--good)} .pill.warm{color:var(--warn)} .pill.cold{color:var(--bad)}
+.kind{font-size:11px;color:var(--muted)}
+.pv-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.filters label.f{min-width:140px;flex:1 1 140px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--paper)}
+.kpi .k{font-size:12px;color:var(--muted)}
+.kpi .v{font-family:var(--font-num);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi .s{font-size:12px;color:var(--muted)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.chart-card{border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0;position:relative}
+.chart-card h3,.sub{font-size:16px;margin-bottom:8px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{fill:var(--muted);font-family:var(--font-body);font-size:11px}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .bar{fill:var(--stamp)}
+.chart .bar:hover,.chart .hit:hover+.bar{opacity:.8}
+.chart .val{fill:var(--ink);font-family:var(--font-num);font-size:12px}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12px;padding:5px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-110%);z-index:3}
+.split{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.split{grid-template-columns:minmax(0,1fr)}}
+.follow{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+.follow li{border-left:3px solid var(--warn);padding:4px 8px;background:var(--paper)}
+.follow li.over{border-left-color:var(--bad)}
+table.leads input,table.leads select{font-size:13px;padding:6px 7px;min-width:110px}
+table.leads td.notes input{min-width:170px}
+tr.total td{font-weight:600;border-top:2px solid var(--ink)}
+.dup{font-size:11px;color:var(--warn);font-weight:600}
+.lnk{font-size:12px;margin-right:8px}
+</style>
+</head>
+<body>
+<div id="lock" class="hide" style="position:fixed;inset:0;z-index:50;background:var(--paper);display:grid;place-items:center;padding:16px">
+  <form id="lockForm" class="panel" style="width:100%;max-width:340px" novalidate>
+    <h2>LoanCheckBLR Lead Tracker</h2>
+    <label class="f" for="lkUser">Username<input type="text" id="lkUser" autocomplete="username"></label>
+    <label class="f" for="lkPass">Password<input type="password" id="lkPass" autocomplete="current-password"></label>
+    <label class="consent" for="lkKeep"><input type="checkbox" id="lkKeep" checked><span>Keep me logged in on this device</span></label>
+    <button type="submit" class="primary" id="lkBtn">Log in</button>
+    <p class="status err" id="lkErr"></p>
+  </form>
+</div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Lead Tracker</h1>
+      <p>Check a customer's loan chances against published bank and NBFC rules, save them as a lead, and track every lead until your payout arrives.</p>
+    </div>
+    <nav class="tabs" aria-label="Views">
+      <a href="#check" id="tab-check">Add lead</a>
+      <a href="#partner" id="tab-partner">Dashboard</a>
+    </nav>
+  </header>
+
+  <!-- ============ CHECK VIEW ============ -->
+  <section id="view-check">
+    <div class="grid">
+      <div>
+        <div class="example" id="exampleNote">
+          <span><strong>Example profile loaded.</strong> Change any answer and the result updates.</span>
+          <button type="button" id="clearBtn">Start blank</button>
+        </div>
+        <form id="f" novalidate>
+          <fieldset>
+            <legend><span class="step">01</span>Which loan?</legend>
+            <div class="seg" role="radiogroup" aria-label="Loan type">
+              <label><input type="radio" name="product" id="p-pl" value="pl" checked><span>Personal loan</span></label>
+              <label><input type="radio" name="product" id="p-bl" value="bl"><span>Business loan</span></label>
+              <label><input type="radio" name="product" id="p-hl" value="hl"><span>Home loan</span></label>
+              <label><input type="radio" name="product" id="p-lap" value="lap"><span>Loan against property</span></label>
+            </div>
+            <div class="row">
+              <label class="f" for="amount">Loan amount you need (₹)<input type="number" id="amount" min="0" step="10000" inputmode="numeric"></label>
+              <label class="f" for="city">City<input type="text" id="city" autocomplete="address-level2"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step">02</span>About you</legend>
+            <div>
+              <div class="qtitle" id="empQ">How do you earn?</div>
+              <div class="seg" role="radiogroup" aria-labelledby="empQ">
+                <label id="emp-sal-wrap"><input type="radio" name="emp" id="e-sal" value="sal" checked><span>Salaried</span></label>
+                <label><input type="radio" name="emp" id="e-self" value="self"><span>Self-employed / business</span></label>
+              </div>
+              <p class="hint hide" id="blHint">Business loans are only for self-employed people and business owners.</p>
+            </div>
+            <div class="row">
+              <label class="f" for="age">Age (years)<input type="number" id="age" min="18" max="85" inputmode="numeric"></label>
+              <label class="f" for="emi">Existing EMIs per month (₹)<small>Total of all running loans. 0 if none.</small><input type="number" id="emi" min="0" step="500" inputmode="numeric"></label>
+            </div>
+          </fieldset>
+
+          <fieldset id="fs-sal">
+            <legend><span class="step">03</span>Your job</legend>
+            <div class="row">
+              <label class="f" for="income">Monthly in-hand salary (₹)<input type="number" id="income" min="0" step="1000" inputmode="numeric"></label>
+              <label class="f" for="salBank">Salary is credited to<select id="salBank">
+                <option value="hdfc">HDFC Bank</option><option value="icici">ICICI Bank</option><option value="sbi">SBI</option><option value="axis">Axis Bank</option><option value="other">Another bank</option><option value="cash">Paid in cash</option>
+              </select></label>
+            </div>
+            <div class="row">
+              <label class="f" for="employer">Employer type<select id="employer">
+                <option value="govt">Government / PSU</option><option value="mnc">MNC / listed company</option><option value="pvt">Private limited company</option><option value="other">Small firm / partnership / shop</option>
+              </select></label>
+              <label class="f" for="expTotal">Total work experience (years)<input type="number" id="expTotal" min="0" step="0.5" inputmode="decimal"></label>
+              <label class="f" for="expCur">Months in current job<input type="number" id="expCur" min="0" step="1" inputmode="numeric"></label>
+            </div>
+          </fieldset>
+
+          <fieldset id="fs-self" class="hide">
+            <legend><span class="step">03</span>Your business</legend>
+            <div class="row">
+              <label class="f" for="turnover">Yearly turnover / sales (₹)<input type="number" id="turnover" min="0" step="50000" inputmode="numeric"></label>
+              <label class="f" for="profit">Yearly income shown in ITR (₹)<input type="number" id="profit" min="0" step="10000" inputmode="numeric"></label>
+            </div>
+            <div class="row">
+              <label class="f" for="vintage">Business running for (years)<input type="number" id="vintage" min="0" step="0.5" inputmode="decimal"></label>
+              <label class="f" for="itrYears">ITR filed for<select id="itrYears"><option value="2">2 years or more</option><option value="1">1 year</option><option value="0">Not filed</option></select></label>
+              <label class="f" for="gst">GST / Udyam registered?<select id="gst"><option value="yes">Yes</option><option value="no">No</option></select></label>
+            </div>
+          </fieldset>
+
+          <fieldset id="fs-prop" class="hide">
+            <legend><span class="step">04</span>The property</legend>
+            <div class="row">
+              <label class="f" for="propValue">Property value (₹)<input type="number" id="propValue" min="0" step="100000" inputmode="numeric"></label>
+              <label class="f hide" for="propType" id="propTypeWrap">Property type<select id="propType"><option value="res">Residential (flat / house)</option><option value="com">Commercial (shop / office)</option></select></label>
+              <label class="f hide" for="ownName" id="ownNameWrap">Is it in your name?<select id="ownName"><option value="yes">Yes, I own it</option><option value="no">No / family-owned</option></select></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step" id="creditStep">04</span>Credit record</legend>
+            <label class="f" for="cibil">CIBIL score<small>Check it free on the CIBIL website or any credit-score app.</small><select id="cibil">
+              <option value="750">750 or more</option><option value="700">700 – 749</option><option value="650">650 – 699</option><option value="600">600 – 649</option><option value="low">Below 600</option><option value="unknown">Don't know / no loan history</option>
+            </select></label>
+            <div class="row">
+              <label class="f" for="bounces">EMI or cheque bounces in last 12 months<select id="bounces"><option value="0">None</option><option value="1">1</option><option value="2">2 or more</option></select></label>
+              <label class="f" for="settled">Ever settled or had a loan written off?<select id="settled"><option value="no">No</option><option value="yes">Yes</option></select></label>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+
+      <aside class="slip" id="slip" aria-live="polite">
+        <div class="slip-head"><span>Eligibility slip</span><span id="slipDate" class="num"></span></div>
+        <div class="slip-body">
+          <div class="stamp-zone"><div class="stamp" id="stamp">Good</div></div>
+          <p class="verdict" id="verdict"></p>
+          <div class="figs">
+            <div class="fig"><div class="k">You may get up to</div><div class="v" id="maxAmt">—</div></div>
+            <div class="fig"><div class="k">EMI for amount asked</div><div class="v" id="emiAsk">—</div></div>
+          </div>
+          <div class="meter">
+            <div class="bar"><i id="meterBar"></i></div>
+            <div class="lbl"><span>Needs work</span><span>Good</span><span>Strong</span></div>
+          </div>
+          <p class="hint" id="lenderLine" style="background:var(--card)"></p>
+          <ul class="checks" id="checks"></ul>
+          <div class="tips hide" id="tipsBox"><strong>To improve your chances</strong><ul id="tips"></ul></div>
+          <p class="hint" style="background:var(--card)">Estimate assumes <span id="assume"></span>. Not a loan approval.</p>
+        </div>
+        <div class="contact">
+          <h3>Save as a lead</h3>
+          <div class="row">
+            <label class="f" for="name">Customer name<input type="text" id="name" autocomplete="off"></label>
+            <label class="f" for="phone">Customer mobile<input type="tel" id="phone" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="10 digits"></label>
+          </div>
+          <label class="f" for="source">Where did this lead come from?<select id="source">
+            <option>Friend / family</option><option>Instagram</option><option>WhatsApp</option><option>Property broker</option><option>CA / tax consultant</option><option>Shop / market visit</option><option>Website</option><option>Other</option>
+          </select></label>
+          <label class="consent" for="consent"><input type="checkbox" id="consent"><span>The customer agreed to a call and to their details being shared with a DSA for this loan.</span></label>
+          <div class="actions"><button type="button" class="primary" id="sendBtn">Save lead</button></div>
+          <p class="status" id="status" role="status"></p>
+        </div>
+      </aside>
+    </div>
+    <div class="minibar" id="minibar"><span><strong id="mbBand">—</strong> · up to <span class="num" id="mbAmt">—</span></span><a href="#check" id="mbLink">See result ↓</a></div>
+    <footer>
+      This tool compares your answers with eligibility rules that lenders publish on their websites (checked November 2026). Lenders also look at your full credit report, documents and their own internal policy, so the final decision is always theirs. We are not a bank or NBFC and are not affiliated with any lender.
+    </footer>
+  </section>
+
+  <!-- ============ PARTNER VIEW ============ -->
+  <section id="view-partner" class="hide">
+    <div class="pv">
+      <div class="panel">
+        <div class="pv-head">
+          <h2>Lead dashboard</h2>
+          <div class="actions">
+            <button type="button" class="primary" id="xlsxBtn">Download Excel report</button>
+            <button type="button" id="copyCsv">Copy CSV</button>
+            <button type="button" id="refreshBtn" class="remote-only hide">Refresh</button>
+            <button type="button" id="logoutBtn" class="remote-only hide">Log out</button>
+          </div>
+        </div>
+        <p class="hint" id="leadsNote">Loading saved leads…</p>
+        <div class="filters" role="group" aria-label="Filters">
+          <label class="f" for="fPeriod">Period<select id="fPeriod">
+            <option value="7">Last 7 days</option><option value="today">Today</option><option value="month" selected>This month</option><option value="lastmonth">Last month</option><option value="90">Last 90 days</option><option value="all">All time</option><option value="custom">Custom dates</option>
+          </select></label>
+          <label class="f hide" for="fFrom" id="fFromWrap">From<input type="date" id="fFrom"></label>
+          <label class="f hide" for="fTo" id="fToWrap">To<input type="date" id="fTo"></label>
+          <label class="f" for="fProduct">Loan<select id="fProduct"><option value="">All loans</option><option value="pl">Personal</option><option value="bl">Business</option><option value="hl">Home</option><option value="lap">LAP</option></select></label>
+          <label class="f" for="fTier">Tier<select id="fTier"><option value="">All tiers</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option></select></label>
+          <label class="f" for="fStatus">Status<select id="fStatus"><option value="">All statuses</option></select></label>
+          <label class="f" for="fSearch">Search<input type="text" id="fSearch" placeholder="Name, phone, DSA"></label>
+        </div>
+        <p class="hint num" id="periodLine"></p>
+
+        <div class="kpis" id="kpis"></div>
+
+        <div class="charts">
+          <div class="chart-card">
+            <h3>Leads per day</h3>
+            <div id="chDays" class="chart"></div>
+          </div>
+          <div class="chart-card">
+            <h3>Where your leads are</h3>
+            <div id="chFunnel" class="chart"></div>
+          </div>
+        </div>
+
+        <div class="split">
+          <div>
+            <h3 class="sub">By loan type</h3>
+            <div class="tbl"><table><thead><tr><th>Loan</th><th>Leads</th><th>Hot</th><th>Warm</th><th>Cold</th><th>Asked</th><th>Disbursed</th><th>Your commission</th></tr></thead><tbody id="byProduct"></tbody></table></div>
+          </div>
+          <div>
+            <h3 class="sub">Follow-ups due</h3>
+            <ul class="follow" id="followList"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="split" style="grid-template-columns:minmax(0,3fr) minmax(0,2fr)">
+          <div>
+            <h3 class="sub">DSA scorecard</h3>
+            <div class="tbl"><table><thead><tr><th>DSA</th><th>Leads sent</th><th>Disbursed</th><th>Conversion</th><th>Commission due</th><th>Received</th><th>Pending</th></tr></thead><tbody id="byDsa"></tbody></table></div>
+          </div>
+          <div>
+            <h3 class="sub">Where leads come from</h3>
+            <div class="tbl"><table><thead><tr><th>Source</th><th>Leads</th><th>Hot/warm</th><th>Disbursed</th></tr></thead><tbody id="bySource"></tbody></table></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Leads</h2>
+        <p class="hint">Change status, DSA, disbursed amount, payout received, follow-up date or notes. Changes save on their own.</p>
+        <div class="tbl"><table class="leads">
+          <thead><tr><th>Date</th><th>Customer</th><th>Loan</th><th>Tier</th><th>Asked / est. max</th><th>Suggested login</th><th>Status</th><th>DSA</th><th>Disbursed (₹)</th><th>Payout received (₹)</th><th>Follow-up</th><th>Notes</th></tr></thead>
+          <tbody id="leadRows"></tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Your payout share</h2>
+        <p class="hint">Your cut of the disbursed amount for each loan type. Used for the commission figures here and in the Excel report.</p>
+        <div class="row" id="shareRow">
+          <label class="f" for="sh-pl">Personal (%)<input type="number" id="sh-pl" step="0.05" min="0" max="5"></label>
+          <label class="f" for="sh-bl">Business (%)<input type="number" id="sh-bl" step="0.05" min="0" max="5"></label>
+          <label class="f" for="sh-hl">Home (%)<input type="number" id="sh-hl" step="0.05" min="0" max="5"></label>
+          <label class="f" for="sh-lap">LAP (%)<input type="number" id="sh-lap" step="0.05" min="0" max="5"></label>
+        </div>
+        <p class="status" id="shareStatus"></p>
+      </div>
+
+      <div class="panel">
+        <h2>Lender rules used</h2>
+        <p class="hint">Published minimums checked in November 2026. "—" means the lender does not publish that rule. Rows marked "secondary" come from comparison sites, not the lender's own page. Re-check these every few months.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>Loan</th><th>Lender</th><th>Age</th><th>Income / turnover</th><th>Experience / vintage</th><th>CIBIL</th><th>Other</th><th>Source</th></tr></thead>
+          <tbody id="ruleRows"></tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>How the estimate works</h2>
+        <ul class="hint" style="margin:0;padding-left:18px;display:grid;gap:6px">
+          <li><strong>EMI limit (FOIR):</strong> all EMIs together may use 40% of income up to ₹25,000 a month, 50% up to ₹50,000, 55% up to ₹1 lakh and 60% above that. Lenders publish 40–65% (Axis about 40%, ICICI 45–50%, SBI up to 60%).</li>
+          <li><strong>Interest rate:</strong> picked by CIBIL band from lenders' published starting rates: personal 11–24%, business 17–26%, home 8–10.5%, LAP 9.5–14%.</li>
+          <li><strong>Tenure:</strong> personal 5 years, business 3 years, home up to 30 years, LAP up to 15 years, cut short so the loan ends by age 65 (salaried) or 70 (self-employed).</li>
+          <li><strong>Home loan cap:</strong> RBI loan-to-value limits: 90% up to ₹30 lakh, 80% up to ₹75 lakh, 75% above.</li>
+          <li><strong>LAP cap:</strong> 60% of a residential and 50% of a commercial property's value (lenders go up to 75%).</li>
+          <li><strong>Business loan cap:</strong> 20% of yearly turnover, a rule of thumb for unsecured loans.</li>
+          <li><strong>Suggested login:</strong> with CIBIL 700+ and no bounces, banks come first (cheapest rate), then housing finance companies and NBFCs. With a weaker profile, NBFCs come first, then fintech apps. A bank where the salary is credited gets top priority. Log in with one lender at a time: each application is a hard enquiry on the customer's CIBIL report.</li>
+          <li><strong>Lead score (0–100):</strong> CIBIL 35, EMI room 25, no bounces 15, job/business stability 15, employer or ITR record 10. Settled or written-off loans cap the score at 35. Hot is 75+, warm 55–74, cold below 55 or no lender match.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script id="engine">
+/* ====== PURE ENGINE: lender rules + scoring (no DOM) ====== */
+const LENDERS = [
+  // ---- Personal loans
+  {p:"pl",name:"HDFC Bank",kind:"Bank",emp:["sal"],minAge:21,maxMat:60,minInc:25000,expTotal:24,expCur:12,cibil:720,
+   src:"https://www.hdfc.bank.in/personal-loan/eligibility-criteria",note:"Pvt Ltd / PSU employees"},
+  {p:"pl",name:"ICICI Bank",kind:"Bank",emp:["sal","self"],
+   sal:{minAge:20,maxMat:58,minInc:30000,expTotal:24,cibil:700},
+   self:{minAge:23,maxMat:65,vintage:2,minAnnual:200000},
+   src:"https://www.icici.bank.in/personal-banking/loans/personal-loan/eligibility",note:"Self-employed: profit after tax ₹2L+"},
+  {p:"pl",name:"SBI (Xpress Credit)",kind:"Bank",emp:["sal"],minAge:21,maxMat:58,minInc:25000,needBank:"sbi",employers:["govt","mnc","pvt"],
+   src:"https://sbi.co.in/web/personal-banking/loans",note:"Needs SBI salary account; EMI up to 60% of income"},
+  {p:"pl",name:"Axis Bank",kind:"Bank",emp:["sal"],minAge:21,maxMat:60,minInc:25000,ownBank:{bank:"axis",inc:15000},expTotal:12,cibil:700,
+   src:"https://www.axis.bank.in/loans/personal-loan/personal-loan-for-rs-40000-salary",note:"₹15,000 if salary is in Axis"},
+  {p:"pl",name:"Bajaj Finance",kind:"NBFC",emp:["sal"],minAge:21,maxMat:80,minInc:25001,cibil:685,
+   src:"https://www.bajajfinserv.in/personal-loan-eligibility-calculator",note:"Income floor varies by city"},
+  {p:"pl",name:"Tata Capital",kind:"NBFC",emp:["sal"],minAge:21,maxMat:58,minInc:20000,expTotal:24,expCur:12,cibil:725,
+   src:"https://www.tatacapital.com/personal-loan",note:"725+ preferred"},
+  {p:"pl",name:"Moneyview",kind:"Fintech",emp:["sal","self"],minAge:21,maxMat:57,minInc:25000,minAnnual:300000,cibil:650,needBankCredit:true,
+   src:"https://moneyview.in/personal-loan-eligibility-check",note:"Income must come into a bank account"},
+  {p:"pl",name:"KreditBee",kind:"Fintech",emp:["sal"],minAge:21,maxMat:60,minInc:10000,
+   src:"https://www.paisabazaar.com/personal-loan/kreditbee/eligibility",note:"Secondary source; small-ticket loans",secondary:true},
+  // ---- Business loans
+  {p:"bl",name:"HDFC Bank",kind:"Bank",emp:["self"],minAge:21,maxMat:65,turnover:4000000,vintage:3,minAnnual:300000,itrYears:2,
+   src:"https://www.hdfc.bank.in/business-loan/eligibility",note:"Profit in last 2 years; 5 yrs total business experience"},
+  {p:"bl",name:"ICICI Bank",kind:"Bank",emp:["self"],minAge:21,maxMat:65,vintage:3,
+   src:"https://www.icici.bank.in/personal-banking/loans/personal-loan/business-instalment-loan",note:"Other limits set case by case"},
+  {p:"bl",name:"Bajaj Finance",kind:"NBFC",emp:["self"],minAge:21,maxMat:80,vintage:3,cibil:650,
+   src:"https://www.bajajfinserv.in/business-loan-eligibility-and-documents",note:"₹2 lakh – ₹80 lakh"},
+  {p:"bl",name:"Lendingkart",kind:"NBFC",emp:["self"],minAge:18,maxMat:65,vintage:1,turnover:300000,cibil:650,
+   src:"https://www.lendingkart.com/faqs/faq-category/productsbusiness-loans-eligibility/",note:"₹75,000 sales in last 3 months"},
+  {p:"bl",name:"Tata Capital",kind:"NBFC",emp:["self"],minAge:21,maxMat:65,vintage:2,
+   src:"https://www.tatacapital.com/blog/loan-for-business/know-your-business-loan-eligibility-at-your-fingertips/",note:"Stable or rising turnover"},
+  // ---- Home loans
+  {p:"hl",name:"HDFC Bank",kind:"Bank",emp:["sal","self"],minAge:18,maxMat:70,
+   sal:{minInc:10000},self:{minAnnual:200000},
+   src:"https://homeloans.hdfc.bank.in/home-loan-eligibility-calculator",note:"Tenure up to 30 years"},
+  {p:"hl",name:"SBI",kind:"Bank",emp:["sal","self"],minAge:18,maxMat:70,cibil:650,
+   self:{vintage:3},
+   src:"https://www.nobroker.in/home-loan/sbi-bank/regular-home-loan",note:"Secondary source; 750+ for best rate",secondary:true},
+  {p:"hl",name:"LIC Housing Finance",kind:"HFC",emp:["sal","self"],minAge:21,maxAge:50,maxMat:70,cibil:600,
+   src:"https://www.nobroker.in/home-loan/lic-housing-finance",note:"Secondary source; apply by age 50",secondary:true},
+  {p:"hl",name:"Bajaj Housing Finance",kind:"HFC",emp:["sal","self"],cibil:725,
+   sal:{minAge:23,maxMat:67,expTotal:36},self:{minAge:23,maxMat:70,vintage:3},
+   src:"https://www.bajajfinserv.in/home-loan-eligibility-calculator",note:"Up to 32-year tenure"},
+  // ---- Loan against property
+  {p:"lap",name:"HDFC Bank",kind:"Bank",emp:["sal","self"],minAge:21,maxMat:65,needOwn:true,
+   src:"https://homeloans.hdfc.bank.in/non-housing-loans/loan-against-property",note:"Tenure up to 15 years"},
+  {p:"lap",name:"ICICI Bank",kind:"Bank",emp:["sal","self"],minAge:25,maxMat:65,needOwn:true,
+   src:"https://www.icici.bank.in/personal-banking/loans/home-loan/loan-against-property",note:"Up to 75% of property value"},
+  {p:"lap",name:"Bajaj Finance",kind:"NBFC",emp:["sal","self"],minAge:25,maxMat:85,cibil:650,needOwn:true,
+   sal:{expTotal:36},self:{vintage:5},
+   src:"https://www.bajajfinserv.in/loan-against-property-eligibility-and-documents",note:"700+ ideal"}
+];
+
+const PRODUCT = {
+  pl:{label:"Personal loan",tenure:5,cap:4000000,rates:{750:11,700:13,650:16,600:20,low:24,unknown:14}},
+  bl:{label:"Business loan",tenure:3,cap:8000000,rates:{750:17,700:19,650:21,600:24,low:26,unknown:20}},
+  hl:{label:"Home loan",tenure:30,cap:Infinity,rates:{750:8,700:8.5,650:9.25,600:9.75,low:10.5,unknown:8.75}},
+  lap:{label:"Loan against property",tenure:15,cap:Infinity,rates:{750:9.5,700:10.5,650:11.5,600:12.5,low:14,unknown:11}}
+};
+const CIBIL_RANGE = {750:[750,900],700:[700,749],650:[650,699],600:[600,649],low:[300,599],unknown:null};
+const CIBIL_LABEL = {750:"750+",700:"700–749",650:"650–699",600:"600–649",low:"Below 600",unknown:"Unknown"};
+
+function rulesFor(L, emp){ return Object.assign({}, L, L[emp]||{}); }
+
+function monthlyIncome(p){ return p.emp==="sal" ? (p.income||0) : (p.profit||0)/12; }
+
+function foirLimit(inc){ return inc<=25000?0.40: inc<=50000?0.50: inc<=100000?0.55:0.60; }
+
+function emiFor(P, ratePct, years){
+  if(!(P>0)) return 0;
+  const r = ratePct/1200, n = Math.round(years*12);
+  return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+}
+function principalFor(emi, ratePct, years){
+  if(!(emi>0)) return 0;
+  const r = ratePct/1200, n = Math.round(years*12);
+  return emi*(1-Math.pow(1+r,-n))/r;
+}
+function tenureYears(p){
+  const prod = PRODUCT[p.product];
+  const endAge = p.emp==="sal"?65:70;
+  let t = Math.min(prod.tenure, endAge - p.age);
+  return Math.max(1, t);
+}
+function hlLtvCap(v){
+  if(!(v>0)) return 0;
+  const c1 = Math.min(0.9*v, 3000000);
+  const c2 = 0.8*v>3000000 ? Math.min(0.8*v, 7500000) : 0;
+  const c3 = 0.75*v>7500000 ? 0.75*v : 0;
+  return Math.max(c1,c2,c3);
+}
+
+/* Check one lender. Returns {status:"yes"|"likely"|"no", reasons:[...]} */
+function checkLender(L, p){
+  const R = rulesFor(L, p.emp);
+  const fails = [], soft = [];
+  if(!R.emp.includes(p.emp)) fails.push(p.emp==="sal"?"Only for self-employed":"Only for salaried");
+  if(R.minAge && p.age < R.minAge) fails.push("Minimum age "+R.minAge);
+  if(R.maxAge && p.age > R.maxAge) fails.push("Must apply by age "+R.maxAge);
+  if(R.maxMat && R.maxMat - p.age < 1) fails.push("Loan must end by age "+R.maxMat);
+  if(p.emp==="sal"){
+    const inc = p.income||0;
+    let need = R.minInc;
+    if(R.ownBank && p.salBank===R.ownBank.bank) need = R.ownBank.inc;
+    if(need && inc < need) fails.push("Salary below ₹"+need.toLocaleString("en-IN"));
+    if(R.needBank && p.salBank!==R.needBank) fails.push("Needs salary account with "+R.needBank.toUpperCase());
+    if(R.employers && !R.employers.includes(p.employer)) fails.push("Employer type not covered");
+    if(R.expTotal && (p.expTotal||0)*12 < R.expTotal) fails.push((R.expTotal/12)+"+ yrs total experience");
+    if(R.expCur && (p.expCur||0) < R.expCur) fails.push(R.expCur+"+ months in current job");
+    if((R.needBankCredit) && p.salBank==="cash") fails.push("Salary must come into a bank");
+    if(p.salBank==="cash" && !R.needBankCredit) soft.push("Cash salary is hard to prove");
+  } else {
+    if(R.minAnnual && (p.profit||0) < R.minAnnual) fails.push("ITR income below ₹"+R.minAnnual.toLocaleString("en-IN"));
+    if(R.turnover && (p.turnover||0) < R.turnover) fails.push("Turnover below ₹"+R.turnover.toLocaleString("en-IN"));
+    if(R.vintage && (p.vintage||0) < R.vintage) fails.push("Business must be "+R.vintage+"+ yrs old");
+    if(R.itrYears && (p.itrYears||0) < R.itrYears) fails.push(R.itrYears+" years of ITR");
+  }
+  if(R.needOwn && p.ownName==="no") fails.push("Property must be in your name");
+  if(R.cibil){
+    const rg = CIBIL_RANGE[p.cibil];
+    if(!rg) soft.push("CIBIL "+R.cibil+"+ needed");
+    else if(rg[1] < R.cibil) fails.push("CIBIL "+R.cibil+"+ needed");
+    else if(rg[0] < R.cibil) soft.push("CIBIL may be just under "+R.cibil);
+  }
+  if(p.settled==="yes") fails.push("Past settlement / write-off");
+  const status = fails.length ? "no" : (soft.length ? "likely" : "yes");
+  return {status, reasons: fails.length?fails:soft};
+}
+
+/* Rank matched lenders to decide where to log in the file first. */
+const OWN_BANK = {hdfc:"HDFC Bank",icici:"ICICI Bank",sbi:"SBI",axis:"Axis Bank"};
+const KIND_WHY = {Bank:"lowest interest rate",HFC:"home-loan specialist",NBFC:"faster approval, more flexible on CIBIL",Fintech:"quick small loan, but high interest"};
+function suggestLogin(p, matches){
+  const good = ["750","700"].includes(String(p.cibil)) && p.bounces==0;
+  const base = good ? {Bank:40,HFC:36,NBFC:28,Fintech:8} : {Bank:12,HFC:22,NBFC:36,Fintech:28};
+  const own = p.emp==="sal" ? OWN_BANK[p.salBank] : null;
+  return matches.map(m=>{
+    let s = base[m.L.kind]||10; const why = [KIND_WHY[m.L.kind]];
+    if(m.status==="yes") s += 20; else { s += 8; why.push("confirm CIBIL first"); }
+    if(own && m.L.name.startsWith(own)){ s += 30; why.unshift("salary account here"); }
+    return {name:m.L.name, kind:m.L.kind, s, why:why.join(", ")};
+  }).sort((a,b)=>b.s-a.s).slice(0,2);
+}
+
+function evaluate(p){
+  const prod = PRODUCT[p.product];
+  const lenders = LENDERS.filter(L=>L.p===p.product);
+  const results = lenders.map(L=>({L, ...checkLender(L,p)}));
+  const matches = results.filter(r=>r.status!=="no");
+  const inc = monthlyIncome(p);
+  const rate = prod.rates[p.cibil];
+  const years = tenureYears(p);
+  const foir = foirLimit(inc);
+  const room = Math.max(0, inc*foir - (p.emi||0));
+  let max = principalFor(room, rate, years);
+  max = Math.min(max, prod.cap);
+  if(p.product==="hl") max = Math.min(max, hlLtvCap(p.propValue||0));
+  if(p.product==="lap") max = Math.min(max, (p.propValue||0)*(p.propType==="com"?0.5:0.6));
+  if(p.product==="bl") max = Math.min(max, 0.2*(p.turnover||0));
+  if(!matches.length) max = 0;
+  max = Math.max(0, Math.floor(max/10000)*10000);
+  const askEmi = emiFor(p.amount||0, rate, years);
+  const ratio = inc>0 ? ((p.emi||0)+askEmi)/inc : 9;
+
+  // ---- score
+  const parts = {};
+  parts.cibil = {750:35,700:28,650:18,600:8,low:0,unknown:15}[p.cibil];
+  parts.emi = ratio<=0.40?25: ratio<=0.50?20: ratio<=0.60?12: ratio<=0.70?5:0;
+  parts.bounce = {0:15,1:8,2:0}[p.bounces];
+  if(p.emp==="sal"){
+    const cur=p.expCur||0, tot=(p.expTotal||0)*12;
+    parts.stab = (cur>=12&&tot>=24)?15: cur>=6?10:3;
+    parts.prof = {govt:10,mnc:9,pvt:7,other:4}[p.employer] - (p.salBank==="cash"?4:0);
+  } else {
+    const v=p.vintage||0;
+    parts.stab = v>=3?15: v>=2?10: v>=1?6:2;
+    parts.prof = {2:10,1:6,0:0}[p.itrYears] + (p.gst==="no"?-2:0);
+  }
+  let score = Object.values(parts).reduce((a,b)=>a+b,0);
+  if((p.amount||0) > max && max>0) score -= 10;
+  if(p.settled==="yes") score = Math.min(score,35);
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  let band = score>=75?"Strong": score>=55?"Good":"Needs work";
+  // Strong needs a known good CIBIL, a clean record and the asked amount within limit
+  if(band==="Strong" && (!["750","700"].includes(String(p.cibil)) || p.bounces>0 || (p.amount||0)>max)){ band="Good"; score=Math.min(score,74); }
+  if(!matches.length){ band = "Needs work"; score = Math.min(score,40); }
+  const tier = band==="Strong"?"hot": band==="Good"?"warm":"cold";
+
+  // ---- factor checklist (C-E-B-I-S)
+  const checks = [];
+  const cb = p.cibil;
+  checks.push({lvl: cb==="750"||cb==="700"?"ok": cb==="650"||cb==="unknown"?"mid":"no",
+    txt:"CIBIL score: "+CIBIL_LABEL[cb]});
+  checks.push({lvl: ratio<=0.5?"ok": ratio<=0.65?"mid":"no",
+    txt:"EMIs would take "+Math.round(Math.min(ratio,9)*100)+"% of income"+(p.amount?" (with the new loan)":"")});
+  checks.push({lvl: p.bounces==0?"ok": p.bounces==1?"mid":"no",
+    txt: p.bounces==0?"No EMI bounces in last 12 months": p.bounces==1?"1 bounce in last 12 months":"2 or more recent bounces"});
+  checks.push({lvl: parts.prof>=7?"ok": parts.prof>=4?"mid":"no",
+    txt: p.emp==="sal" ? (p.salBank==="cash"?"Salary paid in cash":"Salary credited to bank") : (p.itrYears==2?"ITR filed 2+ years": p.itrYears==1?"ITR filed 1 year":"No ITR filed")});
+  checks.push({lvl: parts.stab>=15?"ok": parts.stab>=10?"mid":"no",
+    txt: p.emp==="sal" ? ((p.expCur||0)+" months in current job") : ((p.vintage||0)+" years in business")});
+  if(p.settled==="yes") checks.push({lvl:"no",txt:"Past settlement or write-off on record"});
+
+  // ---- tips
+  const tips = [];
+  if(cb==="low"||cb==="600") tips.push("Raise your CIBIL score above 700 first: pay every EMI and card bill on time for 6 months.");
+  if(cb==="unknown") tips.push("Check your CIBIL score for free before applying. Lenders decide on it.");
+  if(ratio>0.6) tips.push("Your EMIs would be too high for your income. Ask for a smaller amount, a longer tenure, or close a small loan first.");
+  if(p.bounces>0) tips.push("Avoid any more bounces. Most lenders check the last 6–12 months of bank statements.");
+  if(p.emp==="sal" && (p.expCur||0)<12) tips.push("Many banks want 12 months in your current job. NBFCs and apps are more flexible.");
+  if(p.emp==="self" && p.itrYears<2) tips.push("File ITR every year. Most banks want 2 years of returns.");
+  if(p.emp==="self" && (p.vintage||0)<3) tips.push("Banks usually want a 3-year-old business. Lendingkart-type NBFCs accept 1 year.");
+  if(p.settled==="yes") tips.push("A settled loan stays on your report. Paying the full balance and getting a 'closed' status helps.");
+  if((p.amount||0)>max && max>0) tips.push("You asked for more than your estimated limit. Adding an earning co-applicant can raise it.");
+  if(p.product==="lap" && p.ownName==="no") tips.push("For LAP the property owner must be an applicant. Apply together with the owner.");
+
+  const login = suggestLogin(p, matches);
+  return {results, matches, max, askEmi, rate, years, foir, score, band, tier, checks, tips, parts, inc, login};
+}
+if(typeof module!=="undefined") module.exports={LENDERS,PRODUCT,evaluate,checkLender,hlLtvCap,emiFor,principalFor};
+</script>
+
+<script>
+/* ====== UI ====== */
+const $ = id => document.getElementById(id);
+const inr = n => "₹"+Math.round(n).toLocaleString("en-IN");
+function short(n){
+  if(!(n>0)) return "₹0";
+  if(n>=1e7) return "₹"+(n/1e7).toFixed(2).replace(/\.?0+$/,"")+" Cr";
+  if(n>=1e5) return "₹"+(n/1e5).toFixed(2).replace(/\.?0+$/,"")+" L";
+  return inr(n);
+}
+const EXAMPLE = {product:"pl",amount:500000,city:"Bengaluru",emp:"sal",age:28,emi:6000,income:55000,salBank:"hdfc",employer:"pvt",expTotal:4,expCur:20,
+  turnover:2500000,profit:600000,vintage:4,itrYears:"2",gst:"yes",propValue:6000000,propType:"res",ownName:"yes",cibil:"750",bounces:"0",settled:"no"};
+const BLANK = {product:"pl",amount:"",city:"Bengaluru",emp:"sal",age:"",emi:0,income:"",salBank:"other",employer:"pvt",expTotal:"",expCur:"",
+  turnover:"",profit:"",vintage:"",itrYears:"2",gst:"yes",propValue:"",propType:"res",ownName:"yes",cibil:"unknown",bounces:"0",settled:"no"};
+const FIELDS = ["amount","city","age","emi","income","salBank","employer","expTotal","expCur","turnover","profit","vintage","itrYears","gst","propValue","propType","ownName","cibil","bounces","settled"];
+
+function load(v){
+  document.querySelector(`input[name=product][value=${v.product}]`).checked = true;
+  document.querySelector(`input[name=emp][value=${v.emp}]`).checked = true;
+  FIELDS.forEach(k=>{ $(k).value = v[k]; });
+}
+function read(){
+  const num = id => { const x = parseFloat($(id).value); return isNaN(x)?0:x; };
+  return {
+    product: document.querySelector("input[name=product]:checked").value,
+    emp: document.querySelector("input[name=emp]:checked").value,
+    amount:num("amount"), city:$("city").value.trim(), age:num("age"), emi:num("emi"),
+    income:num("income"), salBank:$("salBank").value, employer:$("employer").value, expTotal:num("expTotal"), expCur:num("expCur"),
+    turnover:num("turnover"), profit:num("profit"), vintage:num("vintage"), itrYears:parseInt($("itrYears").value,10), gst:$("gst").value,
+    propValue:num("propValue"), propType:$("propType").value, ownName:$("ownName").value,
+    cibil:$("cibil").value, bounces:parseInt($("bounces").value,10), settled:$("settled").value
+  };
+}
+let lastBand = null, lastRes = null, lastP = null;
+function render(){
+  const p = read();
+  // product rules for the form
+  const isBL = p.product==="bl";
+  $("e-sal").disabled = isBL; $("emp-sal-wrap").style.opacity = isBL?.45:1; $("blHint").classList.toggle("hide",!isBL);
+  if(isBL && p.emp!=="self"){ $("e-self").checked = true; p.emp="self"; }
+  $("fs-sal").classList.toggle("hide", p.emp!=="sal");
+  $("fs-self").classList.toggle("hide", p.emp!=="self");
+  const prop = p.product==="hl"||p.product==="lap";
+  $("fs-prop").classList.toggle("hide", !prop);
+  $("propTypeWrap").classList.toggle("hide", p.product!=="lap");
+  $("ownNameWrap").classList.toggle("hide", p.product!=="lap");
+  $("creditStep").textContent = prop?"05":"04";
+
+  const ready = p.age>=18 && (p.emp==="sal"? p.income>0 : (p.profit>0||p.turnover>0)) && (!prop || p.propValue>0);
+  if(!ready){
+    $("stamp").textContent="Fill in"; $("stamp").className="stamp";
+    $("verdict").textContent="Enter your age, income"+(prop?" and property value":"")+" to see your result.";
+    ["maxAmt","emiAsk"].forEach(i=>$(i).textContent="—");
+    $("meterBar").style.width="0"; $("lenderLine").textContent=""; $("checks").innerHTML=""; $("tipsBox").classList.add("hide");
+    $("assume").textContent="your answers"; $("mbBand").textContent="Fill in"; $("mbAmt").textContent="—"; lastRes=null; lastP=p; updateWa(); return;
+  }
+  const r = evaluate(p);
+  lastRes = r; lastP = p;
+  const st = $("stamp");
+  st.textContent = r.band;
+  st.className = "stamp"+(r.band==="Needs work"?" bad":"");
+  if(lastBand!==r.band){ void st.offsetWidth; st.classList.add("thunk"); lastBand=r.band; }
+  const label = PRODUCT[p.product].label.toLowerCase();
+  $("verdict").textContent = r.band==="Strong" ? `Your profile fits most lenders for a ${label}.`
+    : r.band==="Good" ? `You have a fair chance for a ${label}. A few things could be better.`
+    : r.matches.length ? `Approval looks difficult right now. See how to improve below.` : `Your answers don't meet any listed lender's basic rules yet.`;
+  $("maxAmt").textContent = short(r.max);
+  $("emiAsk").textContent = p.amount>0 ? inr(r.askEmi)+"/mo" : "—";
+  $("meterBar").style.width = r.score+"%";
+  $("lenderLine").innerHTML = `Meets the published rules of <strong class="num">${r.matches.length} of ${r.results.length}</strong> lenders we track for this loan.`;
+  $("checks").innerHTML = r.checks.map(c=>`<li><span class="dot ${c.lvl}" aria-hidden="true">${c.lvl==="ok"?"✓":c.lvl==="mid"?"!":"✕"}</span><span>${c.txt}</span></li>`).join("");
+  $("tips").innerHTML = r.tips.map(t=>`<li>${t}</li>`).join("");
+  $("tipsBox").classList.toggle("hide", !r.tips.length);
+  $("assume").textContent = `${r.rate}% interest for ${r.years} years`;
+  $("mbBand").textContent = r.band; $("mbAmt").textContent = short(r.max);
+  updateWa();
+}
+function updateWa(){}
+
+/* ---- lead saving (db) ---- */
+let dbP = null;
+/* ===== Google Sheet connection (set API_URL to your Apps Script web-app URL) ===== */
+const API_URL = "https://script.google.com/macros/s/AKfycbyNNCTZwn51vEz7cGDy9rEu8qN2dvJB5q7NStXeen8HHryCQ4K40ZbRjzFj1DGeN8KC/exec";
+const ON_CLAUDE = !!(window.claude && window.claude.use);
+let TOKEN = ""; try{ TOKEN = localStorage.getItem("lct_token") || sessionStorage.getItem("lct_token") || ""; }catch(e){}
+async function api(body){
+  if(!API_URL) throw new Error("setup");
+  const r = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)});
+  const j = await r.json();
+  if(!j.ok && j.error==="login"){ showLock("Please log in again."); throw new Error("login"); }
+  if(!j.ok) throw new Error(j.error||"failed");
+  return j;
+}
+const RemoteDB = (()=>{
+  let cache = [], share = null; const lsubs = [], ssubs = [];
+  const snap = () => { const docs = cache.slice().sort((a,b)=>a.createdAt<b.createdAt?1:-1).map(d=>({id:d.id, exists:true, data:()=>d})); return {docs, size:docs.length, empty:!docs.length}; };
+  async function refresh(){ const j = await api({action:"list", token:TOKEN}); cache = j.leads; share = j.share; lsubs.forEach(f=>f(snap())); ssubs.forEach(f=>f({exists:true, data:()=>share})); }
+  setInterval(()=>{ if(TOKEN && document.visibilityState==="visible") refresh().catch(()=>{}); }, 60000);
+  document.addEventListener("visibilitychange", ()=>{ if(TOKEN && document.visibilityState==="visible") refresh().catch(()=>{}); });
+  return {
+    refresh,
+    collection: n => ({
+      add: async rec => { const j = await api({action:"add", token:TOKEN, rec}); await refresh(); return {id:j.id}; },
+      doc: id => ({ update: async v => { const field = Object.keys(v).find(k=>k!=="updatedAt"); const lead = cache.find(x=>x.id===id)||{};
+                      await api({action:"update", token:TOKEN, id, phone:lead.phone, field, value:v[field]}); lead[field]=v[field]; } }),
+      orderBy: () => ({ limit: () => ({ onSnapshot: (cb, err) => { lsubs.push(cb); refresh().catch(e=>err&&err({code:"unavailable",message:e.message})); return ()=>{}; } }) })
+    }),
+    doc: p => ({ onSnapshot: (cb) => { ssubs.push(cb); if(share) cb({exists:true,data:()=>share}); return ()=>{}; },
+                 set: async v => { await api({action:"share", token:TOKEN, share:v}); } })
+  };
+})();
+function getDb(){ if(!dbP){ dbP = ON_CLAUDE ? window.claude.use("db").catch(()=>null) : Promise.resolve(API_URL ? RemoteDB : null); } return dbP; }
+
+async function send(){
+  const s = $("status");
+  const name = $("name").value.trim(), phone = $("phone").value.replace(/\D/g,"");
+  if(!lastRes){ s.className="status err"; s.textContent="Fill in the customer's details above first."; return; }
+  if(name.length<2){ s.className="status err"; s.textContent="Enter the customer's name."; $("name").focus(); return; }
+  if(!/^[6-9]\d{9}$/.test(phone)){ s.className="status err"; s.textContent="Enter a 10-digit Indian mobile number."; $("phone").focus(); return; }
+  if(!$("consent").checked){ s.className="status err"; s.textContent="Tick the box once the customer has agreed to a call and to sharing with a DSA."; return; }
+  const p = lastP, r = lastRes;
+  const rec = {createdAt:new Date().toISOString(), name, phone, city:p.city, product:p.product, emp:p.emp, age:p.age,
+    amount:p.amount, income:Math.round(r.inc), emi:p.emi, cibil:p.cibil, bounces:p.bounces, settled:p.settled,
+    turnover:p.emp==="self"?p.turnover:null, vintage:p.emp==="self"?p.vintage:null, expCur:p.emp==="sal"?p.expCur:null,
+    propValue:(p.product==="hl"||p.product==="lap")?p.propValue:null,
+    score:r.score, band:r.band, tier:r.tier, maxEstimate:r.max, status:"new",
+    matched:r.matches.map(m=>m.L.name), salBank:p.emp==="sal"?p.salBank:null,
+    login:r.login.map(x=>({name:x.name,why:x.why})), source:$("source").value, payoutRecd:0, consent:true, consentText:"Customer agreed to a call and to sharing details with a DSA for this loan"};
+  $("sendBtn").disabled = true; s.className="status"; s.textContent="Saving…";
+  try{
+    const db = await getDb();
+    if(!db) throw new Error("no-db");
+    await db.collection("leads").add(rec);
+    s.className="status ok"; s.textContent="Saved "+name+" to your dashboard."; $("name").value=""; $("phone").value=""; $("consent").checked=false;
+  }catch(e){
+    s.className="status err"; s.textContent = ON_CLAUDE ? "Couldn't save. Open this page on claude.ai while signed in, then try again." : (e.message==="login" ? "Log in first, then save again." : "Couldn't save. Check your internet and try again.");
+  }finally{ $("sendBtn").disabled = false; }
+}
+
+/* ---- partner view ---- */
+const PNAME = {pl:"Personal",bl:"Business",hl:"Home",lap:"LAP"};
+const STATUSES = [["new","New"],["contacted","Contacted"],["shared","Sent to DSA"],["logged","Logged in"],["sanctioned","Sanctioned"],["disbursed","Disbursed"],["rejected","Rejected"],["dropped","Not interested"]];
+const SLABEL = Object.fromEntries(STATUSES);
+const CLOSED = ["disbursed","rejected","dropped"];
+const TLABEL = {hot:"Hot",warm:"Warm",cold:"Cold"};
+const DEFAULT_SHARE = {pl:1,bl:0.75,hl:0.25,lap:0.3};
+let share = {...DEFAULT_SHARE};
+let leads = [], leadsSub = null, sample = false, realLeads = [], tableKey = "";
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const fmtD = s => new Date(s+"T00:00:00").toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+const fmtDs = s => new Date(s+"T00:00:00").toLocaleDateString("en-IN",{day:"2-digit",month:"short"});
+const leadDay = l => ymd(new Date(l.createdAt));
+const commission = l => (l.status==="disbursed" ? (l.disbursed||0)*(share[l.product]||0)/100 : 0);
+
+function periodRange(){
+  const v = $("fPeriod").value, now = new Date(), t = ymd(now);
+  const back = n => { const d=new Date(now); d.setDate(d.getDate()-n+1); return ymd(d); };
+  if(v==="today") return [t,t];
+  if(v==="7") return [back(7),t];
+  if(v==="90") return [back(90),t];
+  if(v==="month") return [ymd(new Date(now.getFullYear(),now.getMonth(),1)),t];
+  if(v==="lastmonth") return [ymd(new Date(now.getFullYear(),now.getMonth()-1,1)), ymd(new Date(now.getFullYear(),now.getMonth(),0))];
+  if(v==="custom"){ const f=$("fFrom").value||t, to=$("fTo").value||t; return f<=to?[f,to]:[to,f]; }
+  const days = leads.map(leadDay).sort(); return [days[0]||t, t];
+}
+function filtered(){
+  const [a,b] = periodRange(), pr=$("fProduct").value, ti=$("fTier").value, st=$("fStatus").value, q=$("fSearch").value.trim().toLowerCase();
+  return leads.filter(l=>{
+    const d = leadDay(l);
+    if(d<a||d>b) return false;
+    if(pr && l.product!==pr) return false;
+    if(ti && l.tier!==ti) return false;
+    if(st && (l.status||"new")!==st) return false;
+    if(q && !([l.name,l.phone,l.dsa,l.city].join(" ").toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+function summarize(rows){
+  const s = {n:rows.length,hot:0,warm:0,cold:0,pipeline:0,pipeN:0,logged:0,disbN:0,disb:0,comm:0,recd:0,byStatus:{},byProduct:{},byLogin:{},byDsa:{},bySource:{}};
+  STATUSES.forEach(([k])=>s.byStatus[k]=0);
+  Object.keys(PNAME).forEach(k=>s.byProduct[k]={n:0,hot:0,warm:0,cold:0,asked:0,disb:0,comm:0});
+  rows.forEach(l=>{
+    const st = l.status||"new";
+    s[l.tier] = (s[l.tier]||0)+1;
+    s.byStatus[st] = (s.byStatus[st]||0)+1;
+    if(!CLOSED.includes(st) && l.tier!=="cold"){ s.pipeline += l.amount||0; s.pipeN++; }
+    if(["logged","sanctioned","disbursed"].includes(st)) s.logged++;
+    const c = commission(l);
+    if(st==="disbursed"){ s.disbN++; s.disb += l.disbursed||0; }
+    s.comm += c; s.recd += Number(l.payoutRecd)||0;
+    if(l.dsa){ const D = s.byDsa[l.dsa] = s.byDsa[l.dsa]||{n:0,disbN:0,comm:0,recd:0}; D.n++; if(st==="disbursed") D.disbN++; D.comm += c; D.recd += Number(l.payoutRecd)||0; }
+    const src = l.source||"Not recorded"; const S2 = s.bySource[src] = s.bySource[src]||{n:0,good:0,disbN:0}; S2.n++; if(l.tier!=="cold") S2.good++; if(st==="disbursed") S2.disbN++;
+    const P = s.byProduct[l.product]; if(P){ P.n++; P[l.tier]++; P.asked += l.amount||0; if(st==="disbursed") P.disb += l.disbursed||0; P.comm += c; }
+    const first = l.login&&l.login[0]&&l.login[0].name || "No lender match";
+    s.byLogin[first] = s.byLogin[first]||{n:0,disbN:0}; s.byLogin[first].n++; if(st==="disbursed") s.byLogin[first].disbN++;
+  });
+  return s;
+}
+
+/* ---- charts (hand-drawn SVG, one hue, hover tooltip) ---- */
+function tipFor(card){ let t = card.querySelector(".tip"); if(!t){ t=document.createElement("div"); t.className="tip hide"; card.appendChild(t);} return t; }
+function wireTips(el){
+  const card = el.closest(".chart-card"), tip = tipFor(card);
+  el.querySelectorAll("[data-tip]").forEach(n=>{
+    n.addEventListener("mouseenter",()=>{ tip.textContent=n.dataset.tip; tip.classList.remove("hide"); });
+    n.addEventListener("mousemove",e=>{ const r=card.getBoundingClientRect(); tip.style.left=(e.clientX-r.left)+"px"; tip.style.top=(e.clientY-r.top)+"px"; });
+    n.addEventListener("mouseleave",()=>tip.classList.add("hide"));
+  });
+}
+function niceMax(v){ if(v<=40) return Math.ceil(v/4)*4 || 4; const p=Math.pow(10,Math.floor(Math.log10(v))); for(const m of [1,2,2.5,5,10]){ if(m*p>=v) return m*p; } return v; }
+function topRounded(x,y,w,h,r){ r=Math.min(r,w/2,h); return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`; }
+function drawDays(rows,[a,b]){
+  const el = $("chDays");
+  const start = new Date(a+"T00:00:00"), end = new Date(b+"T00:00:00");
+  const nDays = Math.round((end-start)/864e5)+1;
+  const weekly = nDays>45;
+  const buckets = [];
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+(weekly?7:1))){
+    const k=ymd(d); const e=new Date(d); e.setDate(e.getDate()+(weekly?6:0));
+    buckets.push({from:k,to:ymd(e>end?end:e),n:0});
+  }
+  rows.forEach(l=>{ const d=leadDay(l); const bk=buckets.find(x=>d>=x.from&&d<=x.to); if(bk) bk.n++; });
+  const W=600,H=190,L=28,B=24,T=10, iw=W-L-8, ih=H-B-T;
+  const max = niceMax(Math.max(1,...buckets.map(x=>x.n)));
+  const bw = iw/buckets.length, gap = Math.min(2, bw*0.2);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Leads per ${weekly?"week":"day"}">`;
+  for(let i=0;i<=4;i++){ const v=max*i/4, y=T+ih-ih*i/4; svg+=`<line class="grid" x1="${L}" x2="${W-8}" y1="${y}" y2="${y}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${Math.round(v*10)/10}</text>`; }
+  const every = Math.ceil(buckets.length/8);
+  buckets.forEach((bk,i)=>{
+    const h = ih*bk.n/max, x = L+i*bw+gap/2, w = Math.max(1,bw-gap);
+    const label = weekly ? `Week of ${fmtDs(bk.from)}` : fmtD(bk.from);
+    svg += `<rect class="hit" x="${L+i*bw}" y="${T}" width="${bw}" height="${ih}" fill="transparent" data-tip="${label}: ${bk.n} lead${bk.n===1?"":"s"}"/>`;
+    if(bk.n) svg += `<path class="bar" d="${topRounded(x,T+ih-h,w,h,Math.min(4,w/2))}" pointer-events="none"/>`;
+    if(i%every===0) svg += `<text x="${L+i*bw+bw/2}" y="${H-6}" text-anchor="middle">${fmtDs(bk.from)}</text>`;
+  });
+  svg += `</svg>`;
+  el.innerHTML = svg + `<p class="hint">${weekly?"Grouped by week. ":""}Total ${rows.length} lead${rows.length===1?"":"s"} in this period.</p>`;
+  wireTips(el);
+}
+function drawFunnel(s){
+  const el = $("chFunnel");
+  const W=600, rowH=24, L=110, R=40;
+  const data = STATUSES.map(([k,lab])=>({k,lab,n:s.byStatus[k]||0}));
+  const max = Math.max(1,...data.map(d=>d.n));
+  const H = data.length*rowH+4;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Leads by status">`;
+  data.forEach((d,i)=>{
+    const y = i*rowH+3, w = (W-L-R)*d.n/max, closedBad = d.k==="rejected"||d.k==="dropped";
+    svg += `<text x="${L-8}" y="${y+14}" text-anchor="end">${d.lab}</text>`;
+    svg += `<rect class="hit" x="0" y="${y}" width="${W}" height="${rowH-2}" fill="transparent" data-tip="${d.lab}: ${d.n} lead${d.n===1?"":"s"}"/>`;
+    if(d.n) svg += `<rect class="bar" x="${L}" y="${y+3}" width="${Math.max(2,w)}" height="${rowH-8}" rx="4" ${closedBad?'style="fill:var(--muted);opacity:.55"':""} pointer-events="none"/>`;
+    svg += `<text class="val" x="${L+Math.max(2,w)+6}" y="${y+15}">${d.n}</text>`;
+  });
+  svg += `</svg>`;
+  el.innerHTML = svg + `<p class="hint">Current status of leads in this period.</p>`;
+  wireTips(el);
+}
+
+/* ---- render dashboard ---- */
+function renderAll(force){
+  const range = periodRange();
+  $("fFromWrap").classList.toggle("hide", $("fPeriod").value!=="custom");
+  $("fToWrap").classList.toggle("hide", $("fPeriod").value!=="custom");
+  const rows = filtered();
+  const s = summarize(rows);
+  $("periodLine").textContent = `${fmtD(range[0])} to ${fmtD(range[1])}${sample?" · SAMPLE DATA, not saved":""}`;
+  const pct = (a,b) => b? Math.round(a*100/b)+"%" : "0%";
+  const kpi = (k,v,sub) => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+  $("kpis").innerHTML =
+    kpi("Leads", s.n, `${s.hot} hot · ${s.warm} warm · ${s.cold} cold`) +
+    kpi("Good leads", pct(s.hot+s.warm,s.n), "hot + warm share") +
+    kpi("Open pipeline", short(s.pipeline), `${s.pipeN} hot/warm leads still open`) +
+    kpi("Logged in", s.logged, `${pct(s.logged,s.n)} of leads reached a lender`) +
+    kpi("Disbursed", short(s.disb), `${s.disbN} loan${s.disbN===1?"":"s"} · ${pct(s.disbN,s.n)} conversion`) +
+    kpi("Your commission", inr(s.comm), "at your payout share") +
+    kpi("Payout pending", inr(Math.max(0,s.comm-s.recd)), `${inr(s.recd)} received so far`);
+  drawDays(rows, range);
+  drawFunnel(s);
+  // by product
+  let tot = {n:0,hot:0,warm:0,cold:0,asked:0,disb:0,comm:0};
+  $("byProduct").innerHTML = Object.keys(PNAME).map(k=>{
+    const P = s.byProduct[k]; Object.keys(tot).forEach(f=>tot[f]+=P[f]);
+    return `<tr><td>${PNAME[k]}</td><td class="n">${P.n}</td><td class="n">${P.hot}</td><td class="n">${P.warm}</td><td class="n">${P.cold}</td><td class="n">${short(P.asked)}</td><td class="n">${short(P.disb)}</td><td class="n">${inr(P.comm)}</td></tr>`;
+  }).join("") + `<tr class="total"><td>Total</td><td class="n">${tot.n}</td><td class="n">${tot.hot}</td><td class="n">${tot.warm}</td><td class="n">${tot.cold}</td><td class="n">${short(tot.asked)}</td><td class="n">${short(tot.disb)}</td><td class="n">${inr(tot.comm)}</td></tr>`;
+  const dsaRows = Object.entries(s.byDsa).sort((x,y)=>y[1].n-x[1].n);
+  $("byDsa").innerHTML = dsaRows.length ? dsaRows.map(([nm,D])=>`<tr><td>${esc(nm)}</td><td class="n">${D.n}</td><td class="n">${D.disbN}</td><td class="n">${pct(D.disbN,D.n)}</td><td class="n">${inr(D.comm)}</td><td class="n">${inr(D.recd)}</td><td class="n">${inr(Math.max(0,D.comm-D.recd))}</td></tr>`).join("")
+    : `<tr><td colspan="7" class="hint">Type a DSA name on a lead to see it here.</td></tr>`;
+  $("bySource").innerHTML = Object.entries(s.bySource).sort((x,y)=>y[1].n-x[1].n).map(([nm,S2])=>`<tr><td>${esc(nm)}</td><td class="n">${S2.n}</td><td class="n">${S2.good}</td><td class="n">${S2.disbN}</td></tr>`).join("") || `<tr><td colspan="4" class="hint">No leads yet.</td></tr>`;
+  // follow-ups (all leads, any period)
+  const today = ymd(new Date()), soon = ymd(new Date(Date.now()+2*864e5));
+  const due = leads.filter(l=>l.followUp && l.followUp<=soon && !CLOSED.includes(l.status||"new")).sort((x,y)=>x.followUp<y.followUp?-1:1);
+  $("followList").innerHTML = due.length ? due.slice(0,12).map(l=>`<li class="${l.followUp<today?"over":""}"><strong>${esc(l.name)}</strong> · ${PNAME[l.product]} · ${SLABEL[l.status||"new"]}<br><span class="num">${fmtDs(l.followUp)}${l.followUp<today?" (overdue)":l.followUp===today?" (today)":""}</span> · <a class="lnk" href="tel:${esc(l.phone)}">${esc(l.phone)}</a></li>`).join("")
+    : `<li style="border-left-color:var(--good)">Nothing due in the next 2 days.</li>`;
+  // table: rebuild only when the set of rows changes, so typing isn't interrupted
+  const key = rows.map(l=>l.id).join(",");
+  if(force || key!==tableKey){ tableKey = key; renderTable(rows); }
+}
+function renderTable(rows){
+  const phones = {}; leads.forEach(l=>phones[l.phone]=(phones[l.phone]||0)+1);
+  const opts = v => STATUSES.map(([k,lab])=>`<option value="${k}"${(v||"new")===k?" selected":""}>${lab}</option>`).join("");
+  $("leadRows").innerHTML = rows.length ? rows.map(l=>{
+    const wa = "https://wa.me/91"+esc(l.phone);
+    return `<tr data-id="${esc(l.id)}">
+      <td class="n">${fmtDs(leadDay(l))}</td>
+      <td><strong>${esc(l.name)}</strong> ${phones[l.phone]>1?'<span class="dup">DUPLICATE</span>':""}<br><a class="lnk num" href="tel:${esc(l.phone)}">${esc(l.phone)}</a><a class="lnk" href="${wa}" target="_blank" rel="noopener">WhatsApp</a><br><span class="kind">${esc(l.source||"")}</span></td>
+      <td>${PNAME[l.product]||esc(l.product)}<br><span class="kind">${l.emp==="sal"?"Salaried":"Self-employed"}, CIBIL ${CIBIL_LABEL[l.cibil]||esc(l.cibil)}</span></td>
+      <td><span class="pill ${esc(l.tier)}">${TLABEL[l.tier]||""}</span><br><span class="kind num">score ${esc(l.score)}</span></td>
+      <td class="n">${short(l.amount)}<br><span class="kind">max ${short(l.maxEstimate)}</span></td>
+      <td>${(l.login||[]).length ? l.login.map((x,i)=>`<span class="kind">${i?"Backup":"1st"}:</span> ${esc(x.name)}`).join("<br>") : "Don't log in yet"}</td>
+      <td><select data-f="status" aria-label="Status for ${esc(l.name)}">${opts(l.status)}</select></td>
+      <td><input type="text" data-f="dsa" value="${esc(l.dsa||"")}" aria-label="DSA for ${esc(l.name)}"></td>
+      <td><input type="number" data-f="disbursed" value="${l.disbursed||""}" min="0" step="10000" aria-label="Disbursed amount for ${esc(l.name)}"></td>
+      <td><input type="number" data-f="payoutRecd" value="${l.payoutRecd||""}" min="0" step="500" aria-label="Payout received for ${esc(l.name)}"></td>
+      <td><input type="date" data-f="followUp" value="${esc(l.followUp||"")}" aria-label="Follow-up date for ${esc(l.name)}"></td>
+      <td class="notes"><input type="text" data-f="notes" value="${esc(l.notes||"")}" aria-label="Notes for ${esc(l.name)}"></td></tr>`;
+  }).join("") : `<tr><td colspan="12" class="hint">No leads match these filters.</td></tr>`;
+}
+async function saveLeadField(id, field, raw){
+  const l = leads.find(x=>x.id===id); if(!l) return;
+  const val = (field==="disbursed"||field==="payoutRecd") ? (parseFloat(raw)||0) : raw;
+  l[field] = val;
+  renderAll(false);
+  if(sample){ $("leadsNote").childNodes[0].textContent = "Sample data: changes are not saved. "; return; }
+  try{
+    const db = await getDb();
+    await db.collection("leads").doc(id).update({[field]:val, updatedAt:new Date().toISOString()});
+    $("leadsNote").childNodes[0].textContent = `Saved ${l.name}'s ${({followUp:"follow-up date",dsa:"DSA",payoutRecd:"payout received",disbursed:"disbursed amount"})[field]||field}. `;
+  }catch(e){ $("leadsNote").childNodes[0].textContent = "Couldn't save that change. Only the page owner can edit leads. "; }
+}
+
+/* ---- sample data (in memory only) ---- */
+function makeSample(){
+  let seed = 7; const rnd = () => (seed = (seed*16807)%2147483647)/2147483647;
+  const pick = a => a[Math.floor(rnd()*a.length)];
+  const names = ["Rahul Sharma","Priya Nair","Arjun Reddy","Sneha Kulkarni","Vikram Shetty","Anjali Rao","Mohammed Irfan","Kavya Gowda","Rohit Patil","Divya Menon","Suresh Kumar","Neha Joshi","Imran Khan","Pooja Hegde","Karthik Iyer","Meera Pillai","Nikhil Jain","Lakshmi Prasad","Aditya Singh","Ritu Verma"];
+  const dsas = ["Ravi Finserv","LoanKart DSA","Ravi Finserv"];
+  const out = [];
+  for(let i=0;i<46;i++){
+    const product = pick(["pl","pl","pl","bl","bl","hl","lap"]);
+    const emp = product==="bl" ? "self" : (rnd()<0.75?"sal":"self");
+    const p = {product, emp, age:22+Math.floor(rnd()*30), city:"Bengaluru", emi:pick([0,0,4000,8000,15000]),
+      income:pick([22000,30000,45000,60000,85000,120000]), salBank:pick(["hdfc","icici","sbi","axis","other"]), employer:pick(["mnc","pvt","pvt","govt","other"]),
+      expTotal:1+Math.floor(rnd()*8), expCur:4+Math.floor(rnd()*40), turnover:pick([1500000,3000000,6000000]), profit:pick([300000,600000,1200000]),
+      vintage:pick([1,2,3,5,8]), itrYears:pick([1,2,2]), gst:"yes", propValue:pick([4000000,6500000,9000000]), propType:"res", ownName:"yes",
+      cibil:pick(["750","750","700","700","650","600","unknown"]), bounces:pick([0,0,0,1,2]), settled:rnd()<0.05?"yes":"no"};
+    p.amount = product==="pl"?pick([200000,300000,500000,800000]): product==="bl"?pick([500000,1000000,2000000]): product==="hl"?pick([3000000,4500000,6000000]):pick([2000000,3500000]);
+    const r = evaluate(p);
+    const d = new Date(); d.setDate(d.getDate()-Math.floor(rnd()*80)); d.setHours(9+Math.floor(rnd()*10), Math.floor(rnd()*60));
+    let status = "new";
+    const roll = rnd();
+    if(r.tier==="hot") status = roll<0.35?"disbursed": roll<0.5?"sanctioned": roll<0.65?"logged": roll<0.8?"shared":"contacted";
+    else if(r.tier==="warm") status = roll<0.2?"disbursed": roll<0.35?"logged": roll<0.55?"shared": roll<0.7?"rejected":"contacted";
+    else status = roll<0.5?"dropped": roll<0.7?"rejected":"new";
+    const daysAgo = Math.round((Date.now()-d)/864e5);
+    if(daysAgo<3 && !CLOSED.includes(status)) status = "new";
+    const fu = new Date(); fu.setDate(fu.getDate()+Math.floor(rnd()*6)-2);
+    out.push({id:"sample-"+i, createdAt:d.toISOString(), name:names[i%names.length], phone:"90000"+String(10000+i*137).slice(-5), city:"Bengaluru",
+      product, emp, age:p.age, amount:p.amount, income:Math.round(r.inc), emi:p.emi, cibil:p.cibil, bounces:p.bounces, settled:p.settled,
+      score:r.score, band:r.band, tier:r.tier, maxEstimate:r.max, matched:r.matches.map(m=>m.L.name), login:r.login.map(x=>({name:x.name,why:x.why})),
+      status, dsa:["shared","logged","sanctioned","disbursed","rejected"].includes(status)?pick(dsas):"",
+      disbursed: status==="disbursed" ? Math.min(p.amount, r.max||p.amount) : 0,
+      followUp: CLOSED.includes(status)?"":ymd(fu), notes:"", source:pick(["Friend / family","Instagram","WhatsApp","Property broker","CA / tax consultant","Shop / market visit"]),
+      payoutRecd: status==="disbursed" && rnd()<0.6 ? Math.round(Math.min(p.amount, r.max||p.amount)*DEFAULT_SHARE[product]/100) : 0});
+  }
+  return out.sort((x,y)=>x.createdAt<y.createdAt?1:-1);
+}
+function setSample(on){
+  sample = on;
+  leads = on ? makeSample() : realLeads;
+  $("sampleBtn").textContent = on ? "Hide sample data" : "Show sample data";
+  $("leadsNote").childNodes[0].textContent = on ? "Showing 46 made-up leads so you can try the dashboard and the Excel report. Nothing here is saved. " : noteText;
+  renderAll(true);
+}
+let noteText = "";
+function setNote(t){ noteText = t; if(!sample) $("leadsNote").childNodes[0].textContent = t; }
+
+async function startLeads(){
+  if(leadsSub) return;
+  leadsSub = true;
+  $("leadsNote").innerHTML = `<span>Loading saved leads… </span><button type="button" id="sampleBtn">Show sample data</button>`;
+  $("sampleBtn").addEventListener("click", ()=>setSample(!sample));
+  renderAll(true);
+  const db = await getDb();
+  if(!db){ setNote(ON_CLAUDE ? "Saved leads appear here when you open this page on claude.ai as its owner. " : "Not connected yet: add your Google Apps Script web-app URL to tracker.html. "); return; }
+  const timer = setTimeout(()=>setNote("Can't reach saved leads yet. Check your connection. "), 10000);
+  db.collection("leads").orderBy("createdAt","desc").limit(1000).onSnapshot(snap=>{
+    clearTimeout(timer);
+    realLeads = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    setNote(snap.empty ? "No saved leads yet. Add one from the Add lead tab, or look at sample data. " : `${snap.size} saved lead${snap.size>1?"s":""}, synced with your Google Sheet. `);
+    if(!sample){ leads = realLeads; renderAll(false); }
+  }, err=>{ clearTimeout(timer); setNote(ON_CLAUDE ? "Only the page owner can see saved leads. " : "Couldn't load leads. Check your internet, then press Refresh. "); });
+  db.doc("settings/payout").onSnapshot(snap=>{
+    if(snap.exists){ share = {...DEFAULT_SHARE, ...snap.data()}; fillShare(); renderAll(false); }
+  }, ()=>{});
+}
+function fillShare(){ Object.keys(DEFAULT_SHARE).forEach(k=>{ if(document.activeElement!==$("sh-"+k)) $("sh-"+k).value = share[k]; }); }
+async function saveShare(){
+  Object.keys(DEFAULT_SHARE).forEach(k=>{ const v=parseFloat($("sh-"+k).value); share[k] = isNaN(v)?0:v; });
+  renderAll(false);
+  const st = $("shareStatus");
+  try{ const db = await getDb(); if(!db) throw 0; await db.doc("settings/payout").set({...share}); st.className="status ok"; st.textContent="Saved."; }
+  catch(e){ st.className="status"; st.textContent="Used for this visit only (couldn't save)."; }
+}
+
+/* ---- Excel report ---- */
+let excelP = null;
+function loadExcelJS(){
+  if(window.ExcelJS) return Promise.resolve(window.ExcelJS);
+  if(!excelP) excelP = new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"; s.onload=()=>res(window.ExcelJS); s.onerror=()=>{excelP=null; rej(new Error("load"));}; document.head.appendChild(s); });
+  return excelP;
+}
+const RUP = '[>=10000000]"₹"##\\,##\\,##\\,##0;[>=100000]"₹"##\\,##\\,##0;"₹"#,##0';
+const xd = s => { const [y,m,d]=s.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
+function colL(i){ let s=""; i++; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26);} return s; }
+async function buildWorkbook(rows, range){
+  const ExcelJS = await loadExcelJS();
+  const wb = new ExcelJS.Workbook(); wb.creator = "Will I Get a Loan?"; wb.created = new Date();
+  const NAVY="FF18213A", VIOLET="FF4B2FB2", FILL={hot:"FFD9F2E3",warm:"FFFDEFD2",cold:"FFFBDAD7"};
+  const headStyle = c => { c.font={bold:true,color:{argb:"FFFFFFFF"}}; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:NAVY}}; c.alignment={vertical:"middle",wrapText:true}; };
+  // ---------- Leads sheet
+  const L = wb.addWorksheet("Leads",{views:[{state:"frozen",ySplit:1,xSplit:3}]});
+  const cols = [
+    {h:"Lead ID",w:14,v:l=>l.id},
+    {h:"Date",w:12,v:l=>xd(leadDay(l)),fmt:"dd-mmm-yyyy"},
+    {h:"Name",w:20,v:l=>l.name},
+    {h:"Phone",w:13,v:l=>l.phone},
+    {h:"City",w:12,v:l=>l.city},
+    {h:"Loan",w:11,v:l=>PNAME[l.product]||l.product},
+    {h:"Work",w:13,v:l=>l.emp==="sal"?"Salaried":"Self-employed"},
+    {h:"Age",w:6,v:l=>l.age},
+    {h:"Amount asked",w:14,v:l=>l.amount||0,fmt:RUP},
+    {h:"Monthly income",w:14,v:l=>l.income||0,fmt:RUP},
+    {h:"Existing EMI",w:12,v:l=>l.emi||0,fmt:RUP},
+    {h:"CIBIL",w:11,v:l=>CIBIL_LABEL[l.cibil]||l.cibil},
+    {h:"Bounces (12 m)",w:9,v:l=>l.bounces},
+    {h:"Score",w:7,v:l=>l.score},
+    {h:"Tier",w:8,v:l=>TLABEL[l.tier]||""},
+    {h:"Est. max loan",w:14,v:l=>l.maxEstimate||0,fmt:RUP},
+    {h:"1st login",w:18,v:l=>l.login&&l.login[0]?l.login[0].name:""},
+    {h:"Backup login",w:18,v:l=>l.login&&l.login[1]?l.login[1].name:""},
+    {h:"Status",w:14,v:l=>SLABEL[l.status||"new"]},
+    {h:"DSA",w:14,v:l=>l.dsa||""},
+    {h:"Disbursed",w:14,v:l=>l.disbursed||0,fmt:RUP},
+    {h:"Your share",w:10,v:l=>(share[l.product]||0)/100,fmt:"0.00%"},
+    {h:"Commission",w:13,fmt:RUP},
+    {h:"Payout received",w:13,v:l=>Number(l.payoutRecd)||0,fmt:RUP},
+    {h:"Source",w:16,v:l=>l.source||""},
+    {h:"Follow-up",w:12,v:l=>l.followUp?xd(l.followUp):null,fmt:"dd-mmm-yyyy"},
+    {h:"Notes",w:30,v:l=>l.notes||""}
+  ];
+  const C = {}; cols.forEach((c,i)=>C[c.h]=colL(i));
+  L.columns = cols.map(c=>({header:c.h,width:c.w}));
+  L.getRow(1).height = 30; L.getRow(1).eachCell(headStyle);
+  rows.forEach((l,i)=>{
+    const r = i+2, row = L.getRow(r);
+    cols.forEach((c,j)=>{
+      const cell = row.getCell(j+1);
+      if(c.h==="Commission") cell.value = {formula:`IF(${C.Status}${r}="Disbursed",${C.Disbursed}${r}*${C["Your share"]}${r},0)`, result:commission(l)};
+      else cell.value = c.v(l);
+      if(c.fmt) cell.numFmt = c.fmt;
+    });
+    row.getCell(cols.findIndex(c=>c.h==="Tier")+1).fill = {type:"pattern",pattern:"solid",fgColor:{argb:FILL[l.tier]||"FFFFFFFF"}};
+    row.getCell(cols.findIndex(c=>c.h==="Status")+1).dataValidation = {type:"list",allowBlank:true,formulae:['"'+STATUSES.map(s=>s[1]).join(",")+'"']};
+  });
+  const N = Math.max(2, rows.length+1);
+  L.autoFilter = {from:"A1", to:colL(cols.length-1)+"1"};
+  const rng = h => `Leads!$${C[h]}$2:$${C[h]}$${N}`;
+
+  // ---------- Dashboard sheet (first tab)
+  const D = wb.addWorksheet("Dashboard",{views:[{showGridLines:false}]});
+  D.orderNo = 0; L.orderNo = 1;
+  D.columns = [{width:28},{width:12},{width:10},{width:10},{width:10},{width:16},{width:16},{width:16}];
+  const s = summarize(rows);
+  let r = 1;
+  D.getCell("A1").value = "Loan Leads Report"; D.getCell("A1").font = {bold:true,size:18,color:{argb:NAVY}};
+  D.getCell("A2").value = `Period: ${fmtD(range[0])} to ${fmtD(range[1])}`;
+  const fl = [$("fProduct").value&&("Loan: "+PNAME[$("fProduct").value]), $("fTier").value&&("Tier: "+TLABEL[$("fTier").value]), $("fStatus").value&&("Status: "+SLABEL[$("fStatus").value]), $("fSearch").value.trim()&&("Search: "+$("fSearch").value.trim())].filter(Boolean);
+  D.getCell("A3").value = "Filters: " + (fl.join(", ")||"none") + (sample?" · SAMPLE DATA":"");
+  D.getCell("A4").value = "Generated: " + new Date().toLocaleString("en-IN");
+  [2,3,4].forEach(i=>D.getCell("A"+i).font={color:{argb:"FF5B6278"}});
+  const section = (row,title) => { const c=D.getCell("A"+row); c.value=title; c.font={bold:true,size:13,color:{argb:VIOLET}}; };
+  const header = (row,labels) => labels.forEach((t,i)=>{ const c=D.getRow(row).getCell(i+1); c.value=t; headStyle(c); });
+  const f = (formula,result,fmt) => ({v:{formula,result},fmt});
+
+  r = 6; section(r,"Summary"); r++;
+  header(r,["Measure","Value"]); r++;
+  const sumRows = [
+    ["Total leads", f(`COUNTA(${rng("Lead ID")})`, s.n)],
+    ["Hot leads", f(`COUNTIF(${rng("Tier")},"Hot")`, s.hot)],
+    ["Warm leads", f(`COUNTIF(${rng("Tier")},"Warm")`, s.warm)],
+    ["Cold leads", f(`COUNTIF(${rng("Tier")},"Cold")`, s.cold)],
+    ["Logged in or further", f(`COUNTIF(${rng("Status")},"Logged in")+COUNTIF(${rng("Status")},"Sanctioned")+COUNTIF(${rng("Status")},"Disbursed")`, s.logged)],
+    ["Loans disbursed", f(`COUNTIF(${rng("Status")},"Disbursed")`, s.disbN)],
+    ["Amount disbursed", f(`SUMIF(${rng("Status")},"Disbursed",${rng("Disbursed")})`, s.disb, RUP)],
+    ["Your commission", f(`SUM(${rng("Commission")})`, Math.round(s.comm), RUP)],
+  ];
+  const first = r;
+  sumRows.forEach(([lab,x])=>{ D.getCell("A"+r).value=lab; const c=D.getCell("B"+r); c.value=x.v; if(x.fmt) c.numFmt=x.fmt; r++; });
+  D.getCell("A"+r).value = "Lead-to-disbursal rate"; D.getCell("B"+r).value = {formula:`IFERROR(B${first+5}/B${first},0)`, result:s.n?s.disbN/s.n:0}; D.getCell("B"+r).numFmt="0.0%"; r++;
+  D.getCell("A"+r).value = "Good-lead rate (hot + warm)"; D.getCell("B"+r).value = {formula:`IFERROR((B${first+1}+B${first+2})/B${first},0)`, result:s.n?(s.hot+s.warm)/s.n:0}; D.getCell("B"+r).numFmt="0.0%"; r++;
+  for(let i=first;i<r;i++) D.getCell("B"+i).font={bold:true};
+
+  r += 1; section(r,"By loan type"); r++;
+  header(r,["Loan","Leads","Hot","Warm","Cold","Amount asked","Disbursed","Your commission"]); r++;
+  const pFirst = r;
+  Object.keys(PNAME).forEach(k=>{
+    const P = s.byProduct[k], nm = PNAME[k];
+    const vals = [nm,
+      {formula:`COUNTIF(${rng("Loan")},"${nm}")`,result:P.n},
+      {formula:`COUNTIFS(${rng("Loan")},"${nm}",${rng("Tier")},"Hot")`,result:P.hot},
+      {formula:`COUNTIFS(${rng("Loan")},"${nm}",${rng("Tier")},"Warm")`,result:P.warm},
+      {formula:`COUNTIFS(${rng("Loan")},"${nm}",${rng("Tier")},"Cold")`,result:P.cold},
+      {formula:`SUMIF(${rng("Loan")},"${nm}",${rng("Amount asked")})`,result:P.asked},
+      {formula:`SUMIFS(${rng("Disbursed")},${rng("Loan")},"${nm}",${rng("Status")},"Disbursed")`,result:P.disb},
+      {formula:`SUMIF(${rng("Loan")},"${nm}",${rng("Commission")})`,result:Math.round(P.comm)}];
+    vals.forEach((v,i)=>{ const c=D.getRow(r).getCell(i+1); c.value=v; if(i>=5) c.numFmt=RUP; });
+    r++;
+  });
+  D.getCell("A"+r).value="Total"; ["B","C","D","E","F","G","H"].forEach((col,i)=>{ const c=D.getCell(col+r); c.value={formula:`SUM(${col}${pFirst}:${col}${r-1})`, result:[s.n,s.hot,s.warm,s.cold,Object.values(s.byProduct).reduce((a,P)=>a+P.asked,0),s.disb,Math.round(s.comm)][i]}; if(i>=4) c.numFmt=RUP; });
+  D.getRow(r).font={bold:true}; D.getRow(r).eachCell(c=>c.border={top:{style:"medium",color:{argb:NAVY}}}); r++;
+
+  D.getCell("A"+r).value = "Payout received"; D.getCell("B"+r).value = {formula:`SUM(${rng("Payout received")})`, result:s.recd}; D.getCell("B"+r).numFmt=RUP; r++;
+  D.getCell("A"+r).value = "Payout pending"; D.getCell("B"+r).value = {formula:`SUM(${rng("Commission")})-SUM(${rng("Payout received")})`, result:Math.round(s.comm-s.recd)}; D.getCell("B"+r).numFmt=RUP; r++;
+
+  r += 1; section(r,"DSA scorecard"); r++;
+  header(r,["DSA","Leads sent","Disbursed","Commission due","Received","Pending"]); r++;
+  Object.entries(s.byDsa).sort((x,y)=>y[1].n-x[1].n).forEach(([nm,v])=>{
+    const q = nm.replace(/"/g,'""');
+    D.getCell("A"+r).value = nm;
+    D.getCell("B"+r).value = {formula:`COUNTIF(${rng("DSA")},"${q}")`,result:v.n};
+    D.getCell("C"+r).value = {formula:`COUNTIFS(${rng("DSA")},"${q}",${rng("Status")},"Disbursed")`,result:v.disbN};
+    D.getCell("D"+r).value = {formula:`SUMIF(${rng("DSA")},"${q}",${rng("Commission")})`,result:Math.round(v.comm)};
+    D.getCell("E"+r).value = {formula:`SUMIF(${rng("DSA")},"${q}",${rng("Payout received")})`,result:v.recd};
+    D.getCell("F"+r).value = {formula:`D${r}-E${r}`,result:Math.round(v.comm-v.recd)};
+    ["D","E","F"].forEach(cl=>D.getCell(cl+r).numFmt=RUP); r++;
+  });
+
+  r += 1; section(r,"Where leads come from"); r++;
+  header(r,["Source","Leads"]); r++;
+  Object.entries(s.bySource).sort((x,y)=>y[1].n-x[1].n).forEach(([nm,v])=>{ D.getCell("A"+r).value=nm; D.getCell("B"+r).value = nm==="Not recorded"? v.n : {formula:`COUNTIF(${rng("Source")},"${nm.replace(/"/g,'""')}")`,result:v.n}; r++; });
+
+  r += 1; section(r,"By status"); r++;
+  header(r,["Status","Leads"]); r++;
+  STATUSES.forEach(([k,lab])=>{ D.getCell("A"+r).value=lab; D.getCell("B"+r).value={formula:`COUNTIF(${rng("Status")},"${lab}")`,result:s.byStatus[k]||0}; r++; });
+
+  r += 1; section(r,"By suggested 1st login"); r++;
+  header(r,["Lender","Leads","Disbursed"]); r++;
+  Object.entries(s.byLogin).sort((x,y)=>y[1].n-x[1].n).forEach(([nm,v])=>{
+    D.getCell("A"+r).value=nm;
+    D.getCell("B"+r).value = nm==="No lender match" ? v.n : {formula:`COUNTIF(${rng("1st login")},"${nm.replace(/"/g,'""')}")`,result:v.n};
+    D.getCell("C"+r).value = nm==="No lender match" ? v.disbN : {formula:`COUNTIFS(${rng("1st login")},"${nm.replace(/"/g,'""')}",${rng("Status")},"Disbursed")`,result:v.disbN};
+    r++;
+  });
+
+  r += 1; section(r,"Leads per day"); r++;
+  header(r,["Date","Leads"]); r++;
+  const days = {}; rows.forEach(l=>{ const d=leadDay(l); days[d]=(days[d]||0)+1; });
+  Object.keys(days).sort().forEach(d=>{ const c=D.getCell("A"+r); c.value=xd(d); c.numFmt="dd-mmm-yyyy"; c.alignment={horizontal:"left"}; D.getCell("B"+r).value={formula:`COUNTIF(${rng("Date")},A${r})`,result:days[d]}; r++; });
+
+  // ---------- Lender rules sheet
+  const R = wb.addWorksheet("Lender rules",{views:[{state:"frozen",ySplit:1}]});
+  R.columns = [{header:"Loan",width:10},{header:"Lender",width:22},{header:"Type",width:9},{header:"Min age",width:8},{header:"Max age at loan end",width:12},{header:"Salaried min income / month",width:16},{header:"Self-employed income / turnover",width:24},{header:"Experience / vintage",width:22},{header:"Min CIBIL",width:9},{header:"Note",width:36},{header:"Source",width:50}];
+  R.getRow(1).height=30; R.getRow(1).eachCell(headStyle);
+  LENDERS.forEach(Ld=>{
+    const sR = rulesFor(Ld,"sal"), eR = rulesFor(Ld,"self"), a = Ld.emp.includes("sal")?sR:eR;
+    const t=[]; if(eR.turnover) t.push(short(eR.turnover)+" turnover"); if(eR.minAnnual && Ld.emp.includes("self")) t.push(short(eR.minAnnual)+" ITR/yr");
+    const ex=[]; if(Ld.emp.includes("sal")&&(sR.expTotal||sR.expCur)) ex.push("Sal: "+[sR.expTotal?(sR.expTotal/12)+" yrs total":"", sR.expCur?sR.expCur+" mo current":""].filter(Boolean).join(", ")); if(Ld.emp.includes("self")&&eR.vintage) ex.push("Self: "+eR.vintage+" yrs business");
+    R.addRow([PNAME[Ld.p],Ld.name+(Ld.secondary?" (secondary source)":""),Ld.kind,a.minAge||"",a.maxMat||"",Ld.emp.includes("sal")&&sR.minInc?sR.minInc:"",t.join(", "),ex.join("; "),Ld.cibil||sR.cibil||"",Ld.note||"",{text:Ld.src,hyperlink:Ld.src}]);
+  });
+  R.getColumn(6).numFmt = RUP;
+  return wb;
+}
+async function downloadReport(){
+  const note = $("leadsNote").childNodes[0];
+  const rows = filtered(), range = periodRange();
+  const btn = $("xlsxBtn"); btn.disabled = true; const old = btn.textContent; btn.textContent = "Preparing…";
+  try{
+    let dl = ON_CLAUDE ? await window.claude.use("downloads") : null;
+    if(!dl) dl = {save: async ({filename,data}) => { const a=document.createElement("a"); a.href=URL.createObjectURL(data); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000); }};
+    const wb = await buildWorkbook(rows, range);
+    const buf = await wb.xlsx.writeBuffer();
+    const name = `loan-leads_${range[0]}_to_${range[1]}${sample?"_SAMPLE":""}.xlsx`;
+    await dl.save({filename:name, data:new Blob([buf])});
+    note.textContent = `Downloaded ${name} with ${rows.length} lead${rows.length===1?"":"s"}. `;
+  }catch(e){
+    note.textContent = e && e.code==="declined" ? "Download cancelled. " : e && e.message==="load" ? "Couldn't load the Excel tool. Check your connection and try again. " : "Couldn't create the report. Please try again. ";
+  }finally{ btn.disabled = false; btn.textContent = old; }
+}
+
+function renderRules(){
+  const fmt = (L,emp) => { const R = rulesFor(L,emp); return R; };
+  $("ruleRows").innerHTML = LENDERS.map(L=>{
+    const s = fmt(L,"sal"), e = fmt(L,"self");
+    const ageTxt = (R)=> (R.minAge||"—")+"–"+(R.maxMat?R.maxMat+" at end":"—")+(R.maxAge?` (apply by ${R.maxAge})`:"");
+    const parts = [];
+    const both = L.emp.length>1;
+    const inc = [], exp = [];
+    if(L.emp.includes("sal")){ if(s.minInc) inc.push((both?"Sal: ":"")+inr(s.minInc)+"/mo"+(s.ownBank?` (${inr(s.ownBank.inc)} if salary in ${s.ownBank.bank.toUpperCase()})`:"")); if(s.expTotal||s.expCur) exp.push((both?"Sal: ":"")+[s.expTotal?(s.expTotal/12)+" yrs total":"", s.expCur?s.expCur+" mo current":""].filter(Boolean).join(", ")); }
+    if(L.emp.includes("self")){ const t=[]; if(e.turnover) t.push(short(e.turnover)+" turnover"); if(e.minAnnual) t.push(short(e.minAnnual)+" ITR/yr"); if(t.length) inc.push((both?"Self: ":"")+t.join(", ")); if(e.vintage) exp.push((both?"Self: ":"")+e.vintage+" yrs business"); }
+    const ageR = L.emp.includes("sal")?s:e;
+    return `<tr><td>${PNAME[L.p]}</td><td><strong>${L.name}</strong><br><span class="kind">${L.kind}${L.secondary?" · secondary":""}</span></td>
+      <td class="n">${ageTxt(ageR)}</td><td>${inc.join("<br>")||"—"}</td><td>${exp.join("<br>")||"—"}</td>
+      <td class="n">${L.cibil||s.cibil||"—"}</td><td>${L.note||""}${L.needBank?"":""}</td>
+      <td><a href="${L.src}" target="_blank" rel="noopener">Open</a></td></tr>`;
+  }).join("");
+}
+function csv(){
+  const cols = [["Date",l=>leadDay(l)],["Name",l=>l.name],["Phone",l=>l.phone],["City",l=>l.city],["Loan",l=>PNAME[l.product]],["Work",l=>l.emp==="sal"?"Salaried":"Self-employed"],
+    ["Amount asked",l=>l.amount],["CIBIL",l=>CIBIL_LABEL[l.cibil]],["Score",l=>l.score],["Tier",l=>TLABEL[l.tier]],["Est. max",l=>l.maxEstimate],
+    ["1st login",l=>l.login&&l.login[0]?l.login[0].name:""],["Status",l=>SLABEL[l.status||"new"]],["DSA",l=>l.dsa],["Disbursed",l=>l.disbursed||0],["Commission",l=>Math.round(commission(l))],["Payout received",l=>l.payoutRecd||0],["Source",l=>l.source],["Follow-up",l=>l.followUp],["Notes",l=>l.notes]];
+  const q = v => { const s = String(v??""); return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+  return [cols.map(c=>c[0]).join(",")].concat(filtered().map(l=>cols.map(c=>q(c[1](l))).join(","))).join("\n");
+}
+
+/* ---- routing ---- */
+function route(){
+  const v = location.hash==="#partner"?"partner":"check";
+  $("view-check").classList.toggle("hide", v!=="check");
+  $("view-partner").classList.toggle("hide", v!=="partner");
+  $("tab-check").toggleAttribute("aria-current", v==="check"); if(v==="check") $("tab-check").setAttribute("aria-current","page");
+  $("tab-partner").toggleAttribute("aria-current", v==="partner"); if(v==="partner") $("tab-partner").setAttribute("aria-current","page");
+  if(v==="partner") startLeads();
+}
+
+/* ---- boot ---- */
+load(EXAMPLE);
+$("slipDate").textContent = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+$("f").addEventListener("input", ()=>{ $("exampleNote").classList.add("hide"); render(); });
+$("f").addEventListener("change", render);
+$("f").addEventListener("submit", e=>e.preventDefault());
+$("clearBtn").addEventListener("click", ()=>{ load(BLANK); $("exampleNote").classList.add("hide"); render(); $("amount").focus(); });
+$("consent").addEventListener("change", updateWa);
+$("name").addEventListener("input", updateWa);
+$("phone").addEventListener("input", e=>{ e.target.value = e.target.value.replace(/\D/g,"").slice(0,10); });
+$("sendBtn").addEventListener("click", send);
+$("mbLink").addEventListener("click", e=>{ e.preventDefault(); $("slip").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); });
+$("copyCsv").addEventListener("click", async ()=>{
+  const note = $("leadsNote").childNodes[0];
+  try{ await navigator.clipboard.writeText(csv()); note.textContent = "Copied "+filtered().length+" leads as CSV. Paste into Excel or Google Sheets. "; }
+  catch(e){ note.textContent = "Copy was blocked by the browser. "; }
+});
+$("fStatus").insertAdjacentHTML("beforeend", STATUSES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
+["fPeriod","fFrom","fTo","fProduct","fTier","fStatus"].forEach(id=>$(id).addEventListener("change", ()=>renderAll(true)));
+$("fSearch").addEventListener("input", ()=>renderAll(true));
+$("leadRows").addEventListener("change", e=>{ const f=e.target.dataset.f, tr=e.target.closest("tr[data-id]"); if(f&&tr) saveLeadField(tr.dataset.id, f, e.target.value); });
+Object.keys(DEFAULT_SHARE).forEach(k=>$("sh-"+k).addEventListener("change", saveShare));
+fillShare();
+$("xlsxBtn").addEventListener("click", downloadReport);
+window.addEventListener("hashchange", route);
+renderRules(); route(); render();
+function showLock(msg){ $("lock").classList.remove("hide"); $("lkErr").textContent = msg||""; $("lkUser").focus(); }
+if(!ON_CLAUDE){
+  document.querySelectorAll(".remote-only").forEach(x=>x.classList.remove("hide"));
+  if(!API_URL) { $("leadsNote").textContent = "Not connected yet: paste your Google Apps Script web-app URL into API_URL in tracker.html."; }
+  else if(!TOKEN) showLock();
+  $("lockForm").addEventListener("submit", async e=>{
+    e.preventDefault(); $("lkBtn").disabled = true; $("lkErr").textContent = "";
+    try{
+      const j = await api({action:"login", user:$("lkUser").value.trim(), pass:$("lkPass").value});
+      TOKEN = j.token;
+      try{ ($("lkKeep").checked ? localStorage : sessionStorage).setItem("lct_token", TOKEN); }catch(_){}
+      $("lock").classList.add("hide"); $("lkPass").value = "";
+      RemoteDB.refresh().catch(()=>{});
+    }catch(err){ $("lkErr").textContent = /Wrong|Too many/.test(err.message) ? err.message : "Couldn't log in. Check your internet and try again."; }
+    finally{ $("lkBtn").disabled = false; }
+  });
+  $("refreshBtn").addEventListener("click", ()=>RemoteDB.refresh().catch(()=>{}));
+  $("logoutBtn").addEventListener("click", async ()=>{ try{ await api({action:"logout", token:TOKEN}); }catch(_){}
+    TOKEN=""; try{ localStorage.removeItem("lct_token"); sessionStorage.removeItem("lct_token"); }catch(_){} showLock("Logged out."); });
+}
+</script>
+</body>
+</html>
